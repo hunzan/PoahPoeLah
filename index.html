@@ -585,7 +585,7 @@ body.is-result #resLines .small{
       zh: {
         askWhoLegend:"求問對象", whoGod:"某尊神明", whoAnc:"某位祖先（含過世親人）", whoUni:"向宇宙天地冥冥之中力量求問",
         whoHelp:"輸入神明稱號，或改選其他對象", yourName:"求問者姓名／暱稱", wish:"求問事項",
-        cupLegend:"選擇桮樣式", cupHint:"小提醒：不同樣式只是外觀，機率一樣啦～",
+        cupLegend:"按我選筊", cupHint:"小提醒：不同樣式只是外觀，機率一樣啦～",
         prayTitle:"先誠心祈禱，再擲筊", resTitle:"指示結果",
         back:"回設定", next:"下一步", toss:"擲筊", again:"再擲一次",
         ok:"聖杯：得到應允，去做就對了！",
@@ -601,7 +601,7 @@ body.is-result #resLines .small{
       tl: {
         askWhoLegend:"求問對象", whoGod:"某尊神明", whoAnc:"某mí祖先（包括過身親人）", whoUni:"Ǹg宇宙天地冥冥之中力量求問",
         whoHelp:"輸入神明稱號，或改選其他對象", yourName:"求問者姓名／暱稱", wish:"求問事項",
-        cupLegend:"選桮款式", cupHint:"提示：款式仝款，機率袂變～",
+        cupLegend:"揤遮選桮", cupHint:"提示：款式仝款，機率袂變～",
         prayTitle:"誠心祈求了後，揤落去跋桮", resTitle:"指示結果",
         back:"倒轉--去", next:"後一步", toss:"跋桮 / poa̍h-poe", again:"閣跋一擺",
         ok:"神桮（sîn-poe / siūⁿ-poe）：得著應允，你ê祈求會實現！",
@@ -623,7 +623,7 @@ body.is-result #resLines .small{
         whoHelp:"Enter a deity’s title, or pick a different target.",
         yourName:"Your name / nickname",
         wish:"Question / intention",
-        cupLegend:"Choose your poe style",
+        cupLegend:"Press to Choose Poe style",
         cupHint:"Note: all styles are cosmetic; odds are identical.",
         prayTitle:"Say a sincere prayer, then toss",
         resTitle:"Response",
@@ -1100,6 +1100,26 @@ body.is-result #resLines .small{
     document.addEventListener('keydown',(e)=>{
       if(!$('#page-pray').hidden && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); $('#btnToss').click(); }
     });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // 這裡可以換成自訂 UI；簡單做就直接 reload
+        window.location.reload();
+      });
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (!reg) return;
+        if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && reg.waiting) {
+              reg.waiting.postMessage('SKIP_WAITING');
+            }
+          });
+        });
+      });
+    }
   </script>
   <script>
   if ('serviceWorker' in navigator) {
