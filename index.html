@@ -554,7 +554,6 @@ body.is-result #resLines .small{
   <!-- 主邏輯：使用 ES Modules，直接 import CUPS -->
   <script type="module">
     import { CUPS as REG_CUPS } from './js/cups/registry.js';
-    globalThis.__CUPS = CUPS;
 
     // ===== helpers =====
     const $ = sel => document.querySelector(sel);
