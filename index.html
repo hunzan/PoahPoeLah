@@ -553,16 +553,15 @@ body.is-result #resLines .small{
       localStorage.setItem('lang', initialLang);
     }
 
-    // ===== state =====
+    // ===== state（只保留這一組）=====
     const CUPS = REG_CUPS;
     if (!CUPS || !CUPS.length) {
       console.error('CUPS 載入失敗：請檢查 js/cups/manifest.js / registry.js');
     }
-    const S = {
-      lang: initialLang,
-      cup: CUPS?.[0]?.id || '',
-      whoType: 'god',
-    };
+    const S = { lang: initialLang, cup: CUPS?.[0]?.id || '', whoType: 'god' };
+
+    // 🔸 提早宣告，避免 applyI18N() 首次執行時取不到
+    let lastOutcome = null;
 
     // ===== i18n =====
     const I18N = {
@@ -629,17 +628,6 @@ body.is-result #resLines .small{
           ok:  '🎉🎉🎉 Three straight “Shèng-poe (OK)”. Hint: <b>Go for it!</b> 😍'
         }
       }
-    };
-
-    // ===== state =====
-    const CUPS = REG_CUPS;
-    if (!CUPS || !CUPS.length) {
-      console.error('CUPS 載入失敗：請檢查 js/cups/manifest.js / registry.js');
-    }
-    const S = {
-      lang: localStorage.getItem('lang') || 'zh',
-      cup: CUPS?.[0]?.id || '',
-      whoType: 'god',
     };
 
     // ===== UI i18n =====
@@ -897,7 +885,6 @@ body.is-result #resLines .small{
     }
 
     // ===== toss logic =====
-    let lastOutcome = null; // {L:'yin|yang', R:'yin|yang', type:'ok|bad|meh'}
     function toss(){
       playSfx('toss');
       const sides = ['yin','yang'];
@@ -911,8 +898,6 @@ body.is-result #resLines .small{
 
       const cup = CUPS.find(c=>c.id===S.cup) || CUPS[0];
       const l = $('#resL'), r = $('#resR');
-      l.innerHTML = cup.render(lastOutcome.L); applyTossAndShake(l, type); setTimeout(()=>l.classList.remove('toss'), 950);
-      r.innerHTML = cup.render(lastOutcome.R); applyTossAndShake(r, type); setTimeout(()=>r.classList.remove('toss'), 950);
 
       const t = I18N[S.lang];
       const badge = $('#badge');
@@ -1046,10 +1031,9 @@ body.is-result #resLines .small{
   }
 
     // ===== init =====
-    rebuildCupList();
-    setupAccordion();
-    show('setup');
-    bindBgmRadios();
+    rebuildCupList();     // 先把卡片畫出來
+    setupAccordion();     // 再把設定頁三個區塊掛上摺疊行為
+    show('setup');        // 進入設定頁
     $$('input[name="who"]').forEach(r=>{
       r.addEventListener('change',()=>{
         const v = getRadio('who'); S.whoType=v;
