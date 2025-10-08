@@ -458,6 +458,44 @@ body.is-result #resLines .small{
   display: block;
   object-fit: contain;
 }
+/* ===== 設定頁：輸入項目標題（置中＋放大＋黃色） ===== */
+/* 1) fieldset 的標題（求問對象、選桮） */
+#setupForm > fieldset > legend,
+#setupForm > fieldset > legend .legend-text {
+  color: var(--acc);          /* 黃色（沿用你的重點色） */
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: .3px;
+}
+
+/* 折疊（accordion）啟用後，legend 是 flex：把內容置中 */
+#setupForm > fieldset.fold > legend {
+  justify-content: center;    /* 讓整個 legend 置中，caret 會在右側 */
+}
+
+/* 2) 單獨那兩個輸入區塊的標題（求問者姓名／暱稱、求問事項）
+      只選擇 #setupForm 直屬的 label → 不會動到 fieldset 內的單選項目 */
+#setupForm > label > span[data-i] {
+  display: block;
+  color: var(--acc);          /* 黃色 */
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  margin: 6px 0 8px;
+}
+
+/* 手機微調：字級略收、仍清楚 */
+@media (max-width: 480px) {
+  #setupForm > fieldset > legend,
+  #setupForm > fieldset > legend .legend-text {
+    font-size: 18px;
+  }
+  #setupForm > label > span[data-i] {
+    font-size: 16px;
+    margin: 4px 0 6px;
+  }
+}
 </style>
 
 </head>
