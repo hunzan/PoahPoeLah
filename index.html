@@ -827,6 +827,16 @@ body.is-result #resLines .small{
       }
     }
 
+  function renderPrayPreviews(){
+    const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
+    const pl = document.getElementById('previewL');
+    const pr = document.getElementById('previewR');
+    if (pl && pr && cup) {
+      pl.innerHTML = cup.render('yang');
+      pr.innerHTML = cup.render('yin');
+    }
+  }
+
   // 投擲 → 先彈跳(.cup) → 發光+左右擺動 → 輕晃收尾
   function applyTossAndShake(el, type){
     const cup = el.closest('.cup') || el;
@@ -882,6 +892,8 @@ body.is-result #resLines .small{
       $('#btnAgain').hidden = (page!=='result');
         // ✅ 只有結果頁時啟用緊湊布局
       document.body.classList.toggle('is-result', page === 'result');
+
+      if (page === 'pray') renderPrayPreviews();   // ✅ 進祈禱頁一定重畫
     }
 
     // ===== toss logic =====
