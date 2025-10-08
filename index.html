@@ -542,13 +542,27 @@ body.is-result #resLines .small{
     const $ = sel => document.querySelector(sel);
     const $$ = sel => Array.from(document.querySelectorAll(sel));
 
-    if (!localStorage.getItem('lang')) {
+    // ===== i18n 初始語言（先算出 lang，再建立 S）=====
+    let initialLang = localStorage.getItem('lang');
+    if (!initialLang) {
       const sys = (navigator.language || 'zh').toLowerCase();
-      if (sys.startsWith('en')) S.lang = 'en';
-      else if (sys.startsWith('zh') || sys.startsWith('cmn')) S.lang = 'zh';
-      else if (sys.includes('nan') || sys.includes('hak') || sys.includes('tw')) S.lang = 'tl'; // 視情況
-      localStorage.setItem('lang', S.lang);
+      if (sys.startsWith('en')) initialLang = 'en';
+      else if (sys.startsWith('zh') || sys.startsWith('cmn')) initialLang = 'zh';
+      else if (sys.includes('nan') || sys.includes('hak') || sys.includes('tw')) initialLang = 'tl';
+      else initialLang = 'zh';
+      localStorage.setItem('lang', initialLang);
     }
+
+    // ===== state =====
+    const CUPS = REG_CUPS;
+    if (!CUPS || !CUPS.length) {
+      console.error('CUPS 載入失敗：請檢查 js/cups/manifest.js / registry.js');
+    }
+    const S = {
+      lang: initialLang,
+      cup: CUPS?.[0]?.id || '',
+      whoType: 'god',
+    };
 
     // ===== i18n =====
     const I18N = {
