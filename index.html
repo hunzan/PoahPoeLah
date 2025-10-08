@@ -939,16 +939,25 @@ body.is-result #resLines .small{
       else type='meh';
       lastOutcome = {L,R,type};
 
-      const cup = CUPS.find(c=>c.id===S.cup) || CUPS[0];
+      const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
       const l = $('#resL'), r = $('#resR');
-
+      // ✅ 先把結果圖畫進去
+      if (l) l.innerHTML = cup.render(lastOutcome.L);
+      if (r) r.innerHTML = cup.render(lastOutcome.R);
+      // ✅ 接著跑一套動畫（彈 → 光暈＋左右擺 → 輕晃）
+      if (l) applyTossAndShake(l, type);
+      if (r) applyTossAndShake(r, type);
+      // ✅ 徽章文字 / 顏色
       const t = I18N[S.lang];
       const badge = $('#badge');
-      badge.className = 'badge ' + (lastOutcome.type==='ok'?'ok': lastOutcome.type==='bad'?'bad':'meh');
-      badge.textContent = lastOutcome.type==='ok'? t.ok : lastOutcome.type==='bad'? t.bad : t.meh;
-
+      if (badge) {
+        badge.className = 'badge ' + (lastOutcome.type==='ok' ? 'ok' : lastOutcome.type==='bad' ? 'bad' : 'meh');
+        badge.textContent = (lastOutcome.type==='ok') ? t.ok : (lastOutcome.type==='bad') ? t.bad : t.meh;
+      }
+      // ✅ 結果敘述
       buildResultLines(lastOutcome);
-      setTimeout(()=> playSfx(type), 120); // 投擲聲後補結果聲
+      // ✅ 投擲聲後補結果聲
+      setTimeout(()=> playSfx(type), 120);
     }
 
     // ===== result lines =====
