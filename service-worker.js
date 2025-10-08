@@ -1,13 +1,13 @@
 // --- Poa̍h-poe--lah! Service Worker -----------------------------
-// 改這行版本字串就能觸發所有用戶的更新 🚀
-const SW_VERSION = 'pp-v6';
+// 改這行版本字串就能觸發所有用戶的更新 🚀（每次發版改一下）
+const SW_VERSION = 'pp-v7';
 
 // Cache 名稱
-const CACHE_STATIC = `static-${SW_VERSION}`;
-const RUNTIME_IMG  = `img-${SW_VERSION}`;
+const CACHE_STATIC  = `static-${SW_VERSION}`;
+const RUNTIME_IMG   = `img-${SW_VERSION}`;
 const RUNTIME_MEDIA = `media-${SW_VERSION}`;
 
-// 殼層核心：可離線顯示的最低需求（請依你的專案路徑調整）
+// 殼層核心：可離線顯示的最低需求（依你的專案路徑調整）
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -21,7 +21,7 @@ const CORE_ASSETS = [
   './js/cups/registry.js',
   './js/cups/manifest.js',
   './js/cups/image.js',
-  // SFX（若不想預載可移除，改由 runtime cache）
+  // SFX（可留可移到 runtime；若安裝階段常失敗，建議移到 runtime）
   './assets/sounds/toss.ogg',
   './assets/sounds/ok.ogg',
   './assets/sounds/bad.ogg',
@@ -30,39 +30,61 @@ const CORE_ASSETS = [
   './assets/sounds/bg_01.ogg',
   './assets/sounds/bg_02.ogg',
   './assets/sounds/bg_03.ogg',
-  './assets/sounds/bg_04.ogg'
+  './assets/sounds/bg_04.ogg',
 ];
 
 // Helper：同來源？
 const sameOrigin = (url) => self.location.origin === new URL(url, self.location.href).origin;
 
+// ✅ 安全預快取：單檔失敗不會讓整個安裝失敗
+async function safePrecacheAll(cacheName, urls) {
+  const cache = await caches.open(cacheName);
+  await Promise.all(urls.map(async (u) => {
+    try {
+      const req = new Request(u, { cache: 'no-cache' }); // 抓新版本
+      const res = await fetch(req);
+      if (res && res.ok) await cache.put(req, res.clone());
+      else console.warn('[SW] precache skip (bad response):', u, res && res.status);
+    } catch (err) {
+      console.warn('[SW] precache failed:', u, err);
+    }
+  }));
+}
+
 // 安裝：預快取核心資產
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_STATIC).then((cache) => cache.addAll(CORE_ASSETS))
-  );
-  self.skipWaiting(); // 立即進入 waiting 狀態
+  event.waitUntil((async () => {
+    try {
+      // 啟用 Navigation Preload（網路 & Cache 互不阻礙），部分瀏覽器支援
+      if ('navigationPreload' in self.registration) {
+        await self.registration.navigationPreload.enable();
+      }
+    } catch {}
+    await safePrecacheAll(CACHE_STATIC, CORE_ASSETS);
+  })());
+
+  // 下載完就進入 waiting，待前端叫 SKIP_WAITING 或重新整理即可生效
+  self.skipWaiting();
 });
 
 // 啟用：清舊版 cache、接管頁面
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(
-        keys.map((key) => {
-          if (![CACHE_STATIC, RUNTIME_IMG, RUNTIME_MEDIA].includes(key)) {
-            return caches.delete(key);
-          }
-        })
-      );
-      await self.clients.claim();
-    })()
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.map((key) => {
+        if (![CACHE_STATIC, RUNTIME_IMG, RUNTIME_MEDIA].includes(key)) {
+          return caches.delete(key);
+        }
+      })
+    );
+    await self.clients.claim();
+    console.log('[SW] activated', SW_VERSION);
+  })());
 });
 
 // 取用策略：
-// 1) 導覽/HTML：network-first（離線 fallback 到 cache）
+// 1) 導覽/HTML：network-first（離線 fallback 到 cache；用 navigationPreload 加速）
 // 2) JS/CSS：cache-first
 // 3) 圖片(svg/webp/png/jpg)：stale-while-revalidate（runtime cache）
 // 4) 聲音/影片(ogg/mp3/mp4/webm)：stale-while-revalidate（runtime cache）
@@ -70,64 +92,59 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
-
-  const url = new URL(request.url);
-
-  // 只處理同來源（GitHub Pages 子路徑 OK）
   if (!sameOrigin(request.url)) return;
 
-  const isHTML = request.mode === 'navigate' ||
-                 request.headers.get('accept')?.includes('text/html') ||
-                 url.pathname.endsWith('.html');
-
+  const url = new URL(request.url);
+  const isHTML = request.mode === 'navigate'
+              || request.headers.get('accept')?.includes('text/html')
+              || url.pathname.endsWith('.html');
   const isJS   = url.pathname.endsWith('.js');
   const isCSS  = url.pathname.endsWith('.css');
-
   const isImage = /\.(?:png|jpg|jpeg|webp|gif|svg)$/i.test(url.pathname);
   const isMedia = /\.(?:ogg|mp3|mp4|webm|wav|m4a)$/i.test(url.pathname);
 
-  // HTML / 導覽：network-first
   if (isHTML) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(networkFirstNav(event));
     return;
   }
-
-  // JS/CSS：cache-first
   if (isJS || isCSS) {
     event.respondWith(cacheFirst(request, CACHE_STATIC));
     return;
   }
-
-  // 圖片：SWR + runtime cache
   if (isImage) {
     event.respondWith(staleWhileRevalidate(request, RUNTIME_IMG));
     return;
   }
-
-  // 聲音/影片：SWR + runtime cache
   if (isMedia) {
     event.respondWith(staleWhileRevalidate(request, RUNTIME_MEDIA));
     return;
   }
-
-  // 其他同來源 GET：cache-first（避免離線炸裂）
   event.respondWith(cacheFirst(request, CACHE_STATIC));
 });
 
 // ---------------- 策略實作 ----------------
 
-async function networkFirst(request) {
+// 導覽最佳化：先吃 navigation preload，其次網路，最後快取與 index.html fallback
+async function networkFirstNav(event) {
+  const request = event.request;
   const cache = await caches.open(CACHE_STATIC);
+
+  try {
+    // 若有 navigation preload，先用（避免等 SW 啟動延遲）
+    const preload = 'preloadResponse' in event ? await event.preloadResponse : null;
+    if (preload) {
+      cache.put(request, preload.clone()).catch(()=>{});
+      return preload;
+    }
+  } catch {}
+
   try {
     const res = await fetch(request);
-    // 成功就更新 cache
     cache.put(request, res.clone()).catch(()=>{});
     return res;
   } catch {
-    // 離線：回快取
     const cached = await cache.match(request, { ignoreSearch: false });
     if (cached) return cached;
-    // 最後手段：回 index（SPA 可路由）
     return cache.match('./index.html');
   }
 }
