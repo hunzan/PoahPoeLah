@@ -4,6 +4,11 @@
 > 由 **林阿猴 & 金蕉（Lîm A-kâu & Kim-chio）** 共同製作  
 > 支援語音音效、玻璃感介面、可安裝成 PWA 或行動 App。
 
+## 🧋 開發者資訊
+
+林阿猴 (Lîm A-kâu)	專案構想、設計、主要開發
+金蕉 (Kim-chio)	技術協作、程式整合、文件撰寫
+
 ---
 
 ## 🎮 專案簡介
@@ -58,9 +63,19 @@ PoahPoeLah/
 
 ## 🚀 部署方式
 
-### 一、GitHub Pages（Web 版）
-1. 推上 GitHub：  
+### GitHub Pages（Web 版）
+推上 GitHub：  
    ```bash
    git add .
    git commit -m "Initial commit"
    git push origin main
+   ```
+
+---
+## ⚖️ 授權
+
+© 2025 林阿猴 & 金蕉
+
+本專案僅供教育與研究用途，保留部分權利。
+若需商業用途，請先取得作者授權。
+
