@@ -532,6 +532,7 @@ body.is-result #resLines .small{
 #page-result .sway {
   animation: swayFew 1.1s ease-in-out forwards !important;
 }
+#page-result .cup { will-change: transform; }
 </style>
 
 </head>
@@ -1000,38 +1001,43 @@ body.is-result #resLines .small{
     }
 
     // ===== toss logic =====
-    function toss(){
-      console.log('[toss] S.cup =', S.cup, 'found =', !!(CUPS.find(c=>c.id===S.cup)));
-      playSfx('toss');
-      const sides = ['yin','yang'];
-      const L = sides[Math.random()<0.5?0:1];
-      const R = sides[Math.random()<0.5?0:1];
-      let type;
-      if((L==='yin' && R==='yang') || (L==='yang' && R==='yin')) type='ok';
-      else if(L==='yang' && R==='yang') type='bad';
-      else type='meh';
-      lastOutcome = {L,R,type};
+  function toss(){
+    console.log('[toss] S.cup =', S.cup, 'found =', !!(CUPS.find(c=>c.id===S.cup)));
+    playSfx('toss');
+    const sides = ['yin','yang'];
+    const L = sides[Math.random()<0.5?0:1];
+    const R = sides[Math.random()<0.5?0:1];
+    let type;
+    if((L==='yin' && R==='yang') || (L==='yang' && R==='yin')) type='ok';
+    else if(L==='yang' && R==='yang') type='bad';
+    else type='meh';
+    lastOutcome = {L,R,type};
 
-      const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
-      const l = $('#resL'), r = $('#resR');
-      // ✅ 先把結果圖畫進去
-      if (l) l.innerHTML = cup.render(lastOutcome.L);
-      if (r) r.innerHTML = cup.render(lastOutcome.R);
-      // ✅ 接著跑一套動畫（彈 → 光暈＋左右擺 → 輕晃）
-      if (l) applyTossAndShake(l, type);
-      if (r) applyTossAndShake(r, type);
-      // ✅ 徽章文字 / 顏色
-      const t = I18N[S.lang];
-      const badge = $('#badge');
-      if (badge) {
-        badge.className = 'badge ' + (lastOutcome.type==='ok' ? 'ok' : lastOutcome.type==='bad' ? 'bad' : 'meh');
-        badge.textContent = (lastOutcome.type==='ok') ? t.ok : (lastOutcome.type==='bad') ? t.bad : t.meh;
-      }
-      // ✅ 結果敘述
-      buildResultLines(lastOutcome);
-      // ✅ 投擲聲後補結果聲
-      setTimeout(()=> playSfx(type), 120);
+    const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
+    const l = $('#resL'), r = $('#resR');
+
+    // ✅ 先把結果圖畫進去
+    if (l) l.innerHTML = cup.render(lastOutcome.L);
+    if (r) r.innerHTML = cup.render(lastOutcome.R);
+
+    // ✅ 接著跑一套動畫（彈 → 光暈＋左右擺 → 輕晃）
+    if (l) applyTossAndShake(l, type);
+    if (r) applyTossAndShake(r, type);
+
+    // ✅ 徽章文字 / 顏色
+    const t = I18N[S.lang];
+    const badge = $('#badge');
+    if (badge) {
+      badge.className = 'badge ' + (lastOutcome.type==='ok' ? 'ok' : lastOutcome.type==='bad' ? 'bad' : 'meh');
+      badge.textContent = (lastOutcome.type==='ok') ? t.ok : (lastOutcome.type==='bad') ? t.bad : t.meh;
     }
+
+    // ✅ 結果敘述
+    buildResultLines(lastOutcome);
+
+    // ✅ 投擲聲後補結果聲
+    setTimeout(()=> playSfx(type), 120);
+  }
 
     // ===== result lines =====
     function buildResultLines(outcome){
@@ -1089,18 +1095,21 @@ body.is-result #resLines .small{
    });
     $('#btnBack').addEventListener('click',()=>{ show('setup'); });
     $('#btnToss').addEventListener('click', ()=>{
-      // 清掉祈禱頁的浮動預覽，避免殘影/誤會
+      // 清掉祈禱頁的浮動預覽，避免殘影
       $('#previewL').innerHTML = '';
       $('#previewR').innerHTML = '';
-      show('result');          // 先切到結果頁，避免 hidden/折疊導致尺寸 0
-      ensureResultHolders();   // ✅ 確保 resL/resR 存在
-      toss();                  // 再做渲染與動畫
-      // 捲到最上面，確保只看得到結果頁
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-    $('#btnAgain').addEventListener('click', ()=>{
-      toss();                 // 直接重擲
-      show('result');         // 保持在結果頁
+
+      show('result');          // 先顯示結果頁（確保容器出現）
+      ensureResultHolders();   // ✅ 確保 #resL / #resR 存在
+
+      // ✅ 等兩個 frame 再執行 toss()，避免手機瞬移
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          toss();
+        });
+      });
+
+      // 滑到最上面
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
