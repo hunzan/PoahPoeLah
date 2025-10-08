@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>跋桮啦！ Poa̍h-poe--lah!</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b0b0f">
+<style>
+/* ===== 基本變數與全域樣式 ===== */
+:root{
+  --bg:#0b0b0f; --fg:#f2f4f8; --muted:#b9bcc6; --acc:#ffd452; --card:#141822; --glass:rgba(255,255,255,.06);
+  --ok:#4caf50; --bad:#ef5350; --meh:#ffb020;
+  --result-lift:64px; /* 結果頁上移量（可調） */
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  color:var(--fg);
+  background:var(--bg);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC","PingFang TC","Heiti TC",sans-serif;
+}
+main{ max-width:680px; margin:0 auto; padding:16px 16px 72px; }
+
+header{
+  position:sticky; top:0; z-index:10;
+  background:linear-gradient(180deg,#0b0b0f 70%,#0b0b0f00);
+  padding:12px 16px; display:flex; gap:8px; align-items:center;
+}
+h1{ font-size:22px; margin:0 8px 0 0; }
+.lang{ margin-left:auto; }
+
+/* 表單元件（玻璃感半透明） */
+select,input,textarea,button{
+  width:100%; padding:9px 10px; font-size:14px; border-radius:10px;
+  color:var(--fg);
+  background:rgba(15,19,32,.55);
+  border:1px solid rgba(32,36,55,.6);
+  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+}
+textarea{ min-height:70px; resize:vertical }
+
+/* fieldset / 卡片 / 祈禱文：同步半透明 */
+fieldset,.card,.prayer{
+  background:rgba(15,20,34,.55);
+  border:1px solid rgba(31,36,53,.7);
+  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+}
+legend{ padding:0 8px; color:#d6daea; }
+.row{ display:grid; grid-template-columns:1fr; gap:12px; }
+
+/* ===== 桮樣式卡片（毛玻璃半透明風格） ===== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 10px;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  -webkit-backdrop-filter: blur(6px) saturate(130%);
+  backdrop-filter: blur(6px) saturate(130%);
+  transition: all 0.25s ease;
+}
+
+/* 卡片區：更透明、讓底圖透出來 */
+.cards .card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 10px;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  -webkit-backdrop-filter: blur(5px) saturate(130%);
+  backdrop-filter: blur(5px) saturate(130%);
+  transition: all 0.25s ease;
+}
+.cards .card[aria-pressed="true"],
+.cards .card:focus {
+  box-shadow: 0 0 0 2px var(--acc) inset;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.card[aria-pressed="true"], .card:focus{
+  box-shadow:0 0 0 2px var(--acc) inset;
+  background:rgba(255,255,255,.15);
+}
+.thumb{
+  background:rgba(255,255,255,.12);
+  border-radius:12px;
+  -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
+}
+/* 卡片用的 label 與 桮底下名稱分流，避免互搶 */
+.cards .label{
+  display:block; text-align:center; margin-top:6px; font-size:13px; color:#f2f4f8;
+  text-shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+/* 工具列 */
+.toolbar{
+  position:fixed; left:0; right:0; bottom:0;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.25)),#0b0b0f;
+  padding:12px 16px; display:flex; gap:12px; z-index:20;
+}
+.btn{ background:#1a2140; border:1px solid #232a52; color:#fff; padding:12px 14px; border-radius:14px; font-size:16px; }
+.btn.primary{ background:linear-gradient(180deg,#2a3568,#1f2852); border-color:#3b4aa8; }
+.btn.ghost{ background:#0f1320; }
+
+.center{ display:grid; place-items:center; }
+.prayer{ line-height:1.7; color:#dfe3f3; border-style:dashed; border-radius:16px; padding:14px; }
+.result{ display:grid; gap:12px; }
+
+/* 桮顯示區 */
+.dice{ display:flex; justify-content:center; gap:28px; margin:8px 0 16px; }
+
+/* ===== 桮尺寸：依螢幕自適應，並允許跳出範圍 ===== */
+.cup{
+  position: relative;           /* 讓容器可當位移參考點 */
+  overflow: visible;            /* ✨ 彈跳時不被剪裁 */
+  width: clamp(96px, 30vw, 140px);
+  height: clamp(96px, 30vw, 140px);
+  display: grid;                /* 置中內部桮圖 */
+  place-items: center;
+}
+/* 限制桮內圖形大小，避免被撐滿容器 */
+.cup img,
+.cup svg {
+  max-width: 85%;
+  max-height: 85%;
+  width: auto;
+  height: auto;
+  object-fit: contain; /* 保持比例不裁切 */
+}
+@media (max-width:480px), (max-height:740px){
+  .cup{
+    width: clamp(88px, 28vh, 132px);
+    height: clamp(88px, 28vh, 132px);
+  }
+}
+
+/* 漂浮與投擲動畫 */
+.float{ animation:float 2s ease-in-out infinite; }
+@keyframes float{ 0%{transform:translateY(0)} 50%{transform:translateY(-6px)} 100%{transform:translateY(0)} }
+.toss{ animation:toss .9s cubic-bezier(.2,.8,.2,1); }
+@keyframes toss{
+  0%{ transform:translateY(-20vh) rotate(-40deg); opacity:.7 }
+  60%{ transform:translateY(0) rotate(0) }
+  80%{ transform:translateY(-5px) }
+  100%{ transform:translateY(0); opacity:1 }
+}
+/* ===== 加強版彈地效果（彈高一點） ===== */
+.bounce {
+  animation: bounceStrong 0.8s cubic-bezier(.25, .65, .35, 1.3); /* 較長、彈性強 */
+}
+
+@keyframes bounceStrong {
+  0%   { transform: translateY(0); }
+  20%  { transform: translateY(20px); }   /* 下墜 */
+  40%  { transform: translateY(-24px); }  /* 高彈起 */
+  55%  { transform: translateY(12px); }   /* 回落 */
+  70%  { transform: translateY(-10px); }  /* 小反彈 */
+  85%  { transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
+
+/* 左右擺動幾下再停（自然落地感） */
+.sway {
+  animation: swayFew 1.1s ease-in-out forwards;
+}
+@keyframes swayFew {
+  0%   { transform: rotate(0deg); }
+  10%  { transform: rotate(-10deg); }
+  25%  { transform: rotate(10deg); }
+  40%  { transform: rotate(-8deg); }
+  60%  { transform: rotate(8deg); }
+  80%  { transform: rotate(-4deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* 弱動作使用者：關閉動效 */
+@media (prefers-reduced-motion: reduce){
+  .sway, .shake, .toss{ animation: none !important; }
+}
+
+/* 結果徽章 */
+.badge{
+  display:inline-block;
+  padding:.25rem .5rem;
+  border-radius:999px;
+  font-size:20px;
+  border:1px solid #2a3152;
+  background:#101424;
+  color:#ccd2ea;
+  margin-top: 0.8em;   /* ✅ 讓徽章往下多一行距離 */
+}
+.ok{ color:#e8ffe8; border-color:#2f6b3a; background:rgba(76,175,80,.5); }
+.bad{ color:#ffecec; border-color:#7b3434; background:rgba(239,83,80,.5); }
+.meh{ color:#fff2e0; border-color:#7b5a24; background:rgba(255,176,32,.5); }
+
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.small{ font-size:12px; color:#aeb6d8; }
+
+/* ===== 結果頁間距（單一定義，避免重複） ===== */
+#page-result h2{ margin:0 0 6px; }
+#page-result .dice{ gap:18px; margin:4px 0 8px; }
+#page-result .result{ gap:8px; }
+
+/* 結果區：讓桮與文字保持約兩行距離，加上柔和底色 */
+#resLines{
+  background:rgba(0,0,0,.4);
+  border-radius:14px;
+  padding:10px 12px;
+}
+/* 關鍵詞保持亮一點（保留單一版本） */
+#resLines b{ font-weight:600; color:#fff9cc; }
+
+/* ===== 金光：根據結果改顏色，兩次擴散 ===== */
+.glow{ position:relative; z-index:1; }
+.glow::after{
+  content:""; position:absolute; inset:-40px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,223,100,.55) 0%, rgba(255,223,100,.35) 25%, rgba(255,223,100,.15) 50%, rgba(255,223,100,0) 80%);
+  filter:blur(12px); opacity:0; animation:glowTwice 1.4s ease-in-out;
+}
+@keyframes glowTwice{
+  0%,100%{ opacity:0; transform:scale(1) }
+  20%{ opacity:.9; transform:scale(1.1) }
+  35%{ opacity:0; transform:scale(1) }
+  55%{ opacity:.8; transform:scale(1.15) }
+  70%{ opacity:0; transform:scale(1) }
+}
+.glow[data-outcome="bad"]::after{
+  background:radial-gradient(circle, rgba(180,180,180,.5) 0%, rgba(160,160,160,.3) 25%, rgba(130,130,130,.1) 50%, rgba(0,0,0,0) 80%);
+}
+.glow[data-outcome="meh"]::after{
+  background:radial-gradient(circle, rgba(255,170,50,.55) 0%, rgba(255,140,30,.35) 25%, rgba(255,110,0,.15) 50%, rgba(255,100,0,0) 80%);
+}
+
+/* ===== 顯示結果時，把整塊往上貼近上方文字（用 --result-lift 控制） ===== */
+body.is-result main{ padding-top:4px; }
+body.is-result #page-result{ margin-top:calc(-1 * var(--result-lift)); }
+body.is-result #page-result h2{ margin:0 0 4px; }
+body.is-result #page-result .dice{ gap:14px; margin:0 0 6px; }
+body.is-result #page-result .result{ gap:6px; }
+
+/* 螢幕較寬時，可再多貼一點 */
+@media (min-width:480px){ :root{ --result-lift:80px; } }
+@media (min-width:768px){ :root{ --result-lift:96px; } }
+
+/* ===== 手機 App 版面精簡（字級/間距壓低） ===== */
+@media (max-width:480px),(max-height:740px){
+  body,main{ font-size:15px; line-height:1.45; }
+  main{ padding:8px 12px 72px; max-width:560px; }
+
+  /* 修正這行原本的錯字（多了一個 18px;） */
+  header{ padding:8px 10px; }
+  h1{ font-size:18px; margin-right:6px; }
+
+  /* 表單微調 */
+  select,input,textarea,button{
+    background:rgba(15,19,32,.55);
+    border:1px solid rgba(32,36,55,.6);
+    -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+  }
+  textarea{ min-height:70px; }
+
+  fieldset{ padding:10px; border-radius:12px; }
+  legend{ font-size:15px; margin-bottom:4px; }
+  label{ font-size:14px; }
+
+  .row{ gap:10px; }
+  .cards{ gap:8px; }
+  .card{ padding:8px; border-radius:10px; }
+  .thumb{ border-radius:8px; }
+  .cards .label{ font-size:11.5px; margin-top:3px; }
+
+  .toolbar{ padding:8px 10px; gap:6px; }
+  .btn{ padding:8px 10px; font-size:14px; border-radius:10px; }
+
+  /* 祈禱頁 */
+  #page-pray h2{ margin:0 0 4px; font-size:16px; font-weight:600; opacity:.9; }
+  #page-pray .prayer{
+    font-size:14px; padding:10px; margin:0 0 6px; line-height:1.5;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  #page-pray .dice{ gap:14px; margin:4px 0 8px; }
+
+  /* 結果頁更緊湊 */
+  #page-result h2{ margin:0 0 4px; font-size:16px; }
+  #page-result .dice{ gap:14px; margin:2px 0 6px; }
+  #page-result .result{ gap:6px; }
+
+  /* 這行把 badge 壓太小了，請刪掉或改大一點 */
+  /* .badge{ font-size:11px; padding:.2rem .5rem; } */
+
+  .small{ font-size:11.5px; }
+  body.is-result main{ padding-top:2px; }
+  body.is-result #page-result{ margin-top:calc(-1 * var(--result-lift,72px)); }
+
+  /* 祈禱頁 BGM 選擇區緊湊化 */
+  #bgmField{ padding:8px 10px; }
+  #bgmField legend{ font-size:14px; color:#cfd3e6; }
+  #bgmField .row{ gap:6px; }
+  #bgmField .row label{ font-size:14px; }
+}
+
+/* ===== BGM 下拉選單（header 右側） ===== */
+.bgm select{
+  padding:6px 10px; font-size:14px; border-radius:10px; margin-left:8px;
+  background:#0f1320; color:#f2f4f8; border:1px solid #202437;
+}
+@media (max-width:480px){
+  .bgm select{ font-size:13px; padding:6px 8px; }
+}
+
+/* ===== 全站背景圖：使用原圖、不降亮度 ===== */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background: url("assets/images/bg.webp") center/cover no-repeat fixed;
+  opacity: 1;         /* 原圖亮度 */
+  filter: none;       /* 取消飽和/亮度調整 */
+  z-index:-1;
+}
+
+/* ===== 可摺疊 fieldset（Accordion） ===== */
+fieldset.fold{ overflow:hidden; padding:0; }
+fieldset.fold > legend{
+  display:flex; align-items:center; gap:8px;
+  padding:12px; margin:0; cursor:pointer; user-select:none;
+  border-bottom:1px solid #1f2435;
+}
+fieldset.fold > legend .legend-text{ flex:1; color:#d6daea; font-weight:600; }
+fieldset.fold > legend .caret{
+  width:10px; height:10px; transform:rotate(0deg);
+  border-right:2px solid #cfd3e6; border-bottom:2px solid #cfd3e6;
+  margin-left:6px; transition:transform .18s ease;
+}
+fieldset.fold[aria-expanded="true"] > legend .caret{ transform:rotate(45deg); }
+fieldset.fold[aria-expanded="false"] > legend .caret{ transform:rotate(-135deg); }
+
+/* 求問對象折疊區：銀白霧光半透明（更透亮） */
+.fold-content {
+  padding: 10px 12px 12px;
+  display: grid;
+  gap: 12px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .22s ease;
+
+  background: rgba(255, 255, 255, 0.04); /* 🌫️ 再透明一級（原0.18→0.04） */
+  -webkit-backdrop-filter: blur(9px) saturate(150%);
+  backdrop-filter: blur(9px) saturate(150%);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); /* 淡淡陰影增加層次 */
+}
+fieldset.fold[aria-expanded="true"] > .fold-content {
+  max-height: 800px;
+}
+
+@media (max-width:480px),(max-height:740px){
+  fieldset.fold > legend{ padding:10px; }
+  .fold-content{ padding:8px 10px 10px; gap:10px; }
+}
+
+/* ===== 桮下方名稱（更亮、更大、更透） ===== */
+.cup .label {
+  font-size: 28px;                  /* 🔸字體放大（原24→28） */
+  font-weight: 700;                 /* 🔸稍微加粗，層次更明顯 */
+  color: #f8faff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.2);  /* 🔸透明度減少（原0.5→0.2） */
+  padding: 8px 14px;                /* 🔸多一點留白，比例更協調 */
+  border-radius: 12px;
+  display: inline-block;
+  margin-top: 1.4em;
+  margin-bottom: 2.6em;
+  letter-spacing: 0.5px;            /* 🔸微開字距，視覺更穩定 */
+}
+
+/* 手機版微調 */
+@media (max-width:480px){
+  .cup .label {
+    font-size: 20px;                /* 🔸原16→20，仍可讀 */
+    background: rgba(0, 0, 0, 0.2); /* 🔸透明度同樣更透 */
+    padding: 5px 9px;
+    margin-top: 1.2em;
+    margin-bottom: 2em;
+  }
+}
+
+/* 隱藏左下方常駐說明（如桮結果重複顯示那三行） */
+#resLines > div:not(.small){ display:none; }
+
+/* 只在結果頁固定彩蛋條（預設透明，交由 .show 淡入） */
+body.is-result #resLines .small{
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:calc(72px + 12px);
+  width:min(92vw,680px);
+  z-index:15;
+  text-align:left; font-size:14px; color:#f6f8ff;
+  background:rgba(0,0,0,.55); border-radius:12px; padding:8px 12px;
+  box-shadow:0 6px 24px rgba(0,0,0,.25);
+}
+@media (max-width:480px){
+  body.is-result #resLines .small{
+    bottom:calc(64px + 10px); width:94vw; font-size:13.5px;
+  }
+}
+/* 淡入控制：預設 0，.show → 1 */
+#resLines .small{ opacity:0; transition:opacity .2s ease; }
+#resLines .small.show{ opacity:1; }
+  /* 結果頁 badge 字級（最終版本，請放在檔案最後） */
+#page-result .badge{
+  font-size: 22px;
+  padding: .35rem .75rem;
+  font-weight: 700;
+  letter-spacing: .4px;
+  line-height: 1.1;
+}
+@media (max-width:480px){
+  #page-result .badge{
+    font-size: 18px;           /* 手機適中，不會太大卡版面 */
+    padding: .3rem .6rem;
+  }
+}
+</style>
+
+</head>
+<body>
+  <header>
+    <h1 id="appTitle">跋桮啦！(Poa̍h-poe--lah!)</h1>
+    <div class="lang">
+      <label class="sr-only" for="langSel">語言</label>
+      <select id="langSel" aria-label="語言">
+        <option value="tl">台語</option>
+        <option value="en">English</option>
+        <option value="zh">華語</option>
+      </select>
+    </div>
+    <div class="bgm">
+  <label class="sr-only" for="bgmSel">背景音樂</label>
+    <select id="bgmSel" aria-label="背景音樂">
+      <option value="bg_01" selected>聖樂の音</option>
+      <option value="bg_02">風鈴の音</option>
+      <option value="bg_03">海洋の音</option>
+      <option value="bg_04">自然の音</option>
+    </select>
+  </div>
+  </header>
+  <main>
+    <!-- ===== Step 1. 設定頁 ===== -->
+    <section id="page-setup" aria-labelledby="setupTitle">
+      <h2 id="setupTitle" class="sr-only">設定</h2>
+      <div class="row" id="setupForm">
+        <fieldset>
+          <legend data-i="askWhoLegend">求問對象</legend>
+          <div class="row">
+            <label><input type="radio" name="who" value="god" checked> <span data-i="whoGod">某尊神明</span></label>
+            <input id="whoName" type="text" placeholder="媽祖／關聖帝君／耶穌…" aria-describedby="whoHelp" />
+            <div id="whoHelp" class="small" data-i="whoHelp">輸入神明稱號，或改選其他對象</div>
+            <label><input type="radio" name="who" value="ancestor"> <span data-i="whoAnc">某位祖先（含過世親人）</span></label>
+            <input id="ancName" type="text" placeholder="阿公／阿嬤／阿祖…" />
+            <label><input type="radio" name="who" value="universe"> <span data-i="whoUni">向宇宙天地冥冥之中力量求問</span></label>
+          </div>
+        </fieldset>
+        <label>
+          <span data-i="yourName">求問者姓名／暱稱</span>
+          <input id="player" type="text" placeholder="輸入你的名字／暱稱" />
+        </label>
+        <label>
+          <span data-i="wish">求問事項</span>
+          <textarea id="wish"></textarea>
+        </label>
+
+        <fieldset>
+          <legend data-i="cupLegend">選擇桮の樣式</legend>
+          <div id="cupList" class="cards" role="listbox" aria-label="杯樣式"></div>
+          <div class="small" data-i="cupHint">🔔小提醒：不同樣式只是外觀，靈驗度無差喔～</div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- ===== Step 2. 祈禱頁 ===== -->
+    <section id="page-pray" hidden aria-labelledby="prayTitle" class="center">
+      <div style="width:100%">
+        <h2 id="prayTitle" data-i="prayTitle">先誠心祈禱，再跋桮</h2>
+        <p class="prayer" id="prayText"></p>
+        <div class="dice">
+          <div class="cup float" id="previewL"></div>
+          <div class="cup float" id="previewR"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Step 3. 結果頁 ===== -->
+    <section id="page-result" hidden aria-labelledby="resTitle">
+      <h2 id="resTitle" data-i="resTitle">指示結果</h2>
+      <div class="dice">
+        <div class="cup" id="resL"></div>
+        <div class="cup" id="resR"></div>
+      </div>
+      <div class="result">
+        <div><span class="badge" id="badge"></span></div>
+        <div id="resLines"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toolbar" role="group" aria-label="操作">
+    <button class="btn ghost" id="btnBack" data-i="back">回設定</button>
+    <button class="btn" id="btnNext" data-i="next">下一步</button>
+    <button class="btn primary" id="btnToss" data-i="toss" hidden>跋桮 / poa̍h-poe</button>
+    <button class="btn" id="btnAgain" data-i="again" hidden>再跋一擺</button>
+    <button class="btn ghost" id="btnMute">背景音效 🔈</button>
+  </div>
+
+  <template id="tpl-line"><div class="small"></div></template>
+
+  <!-- 主邏輯：使用 ES Modules，直接 import CUPS -->
+  <script type="module">
+    import { CUPS as REG_CUPS } from './js/cups/registry.js';
+
+    // ===== helpers =====
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    if (!localStorage.getItem('lang')) {
+      const sys = (navigator.language || 'zh').toLowerCase();
+      if (sys.startsWith('en')) S.lang = 'en';
+      else if (sys.startsWith('zh') || sys.startsWith('cmn')) S.lang = 'zh';
+      else if (sys.includes('nan') || sys.includes('hak') || sys.includes('tw')) S.lang = 'tl'; // 視情況
+      localStorage.setItem('lang', S.lang);
+    }
+
+    // ===== i18n =====
+    const I18N = {
+      zh: {
+        askWhoLegend:"求問對象", whoGod:"某尊神明", whoAnc:"某位祖先（含過世親人）", whoUni:"向宇宙天地冥冥之中力量求問",
+        whoHelp:"輸入神明稱號，或改選其他對象", yourName:"求問者姓名／暱稱", wish:"求問事項",
+        cupLegend:"選擇桮樣式", cupHint:"小提醒：不同樣式只是外觀，機率一樣啦～",
+        prayTitle:"先誠心祈禱，再擲筊", resTitle:"指示結果",
+        back:"回設定", next:"下一步", toss:"擲筊", again:"再擲一次",
+        ok:"聖杯：得到應允，去做就對了！",
+        bad:"陰杯：神明說不行，換個方法吧。",
+        meh:"笑杯：神明／先人／神秘力量笑了，可能還沒旨意，或是沒聽懂你的意思，請再問一次。",
+        who:"求問對象", you:"求問者", topic:"事項",
+        streak: {
+          meh: '❓❓❓ 連續三擺「笑杯」，建議：<b>自己做主！😆</b>',
+          bad: '🚫🚫🚫 連續三擺「陰杯」，建議：<b>真的不行喔！❌</b>',
+          ok:  '🎉🎉🎉 連續三擺「聖杯」，建議：<b>去做就對！😍</b>'
+        }
+      },
+      tl: {
+        askWhoLegend:"求問對象", whoGod:"某尊神明", whoAnc:"某mí祖先（包括過身親人）", whoUni:"Ǹg宇宙天地冥冥之中力量求問",
+        whoHelp:"輸入神明稱號，或改選其他對象", yourName:"求問者姓名／暱稱", wish:"求問事項",
+        cupLegend:"選桮款式", cupHint:"提示：款式仝款，機率袂變～",
+        prayTitle:"誠心祈求了後，揤落去跋桮", resTitle:"指示結果",
+        back:"倒轉--去", next:"後一步", toss:"跋桮 / poa̍h-poe", again:"閣跋一擺",
+        ok:"神桮（sîn-poe / siūⁿ-poe）：得著應允，你ê祈求會實現！",
+        bad:"陰桮（im-poe / bô-poe）：毋通喔，換一款做法。",
+        meh:"笑桮（chhiò-poe）：神明／先人／神秘力量笑笑leh，可能猶未有旨意，抑是聽無你ê意思。",
+        who:"求問對象", you:"祈求者", topic:"求啥代誌",
+        streak: {
+          meh: '❓❓❓ 連續三擺「笑桮」，建議：<b>家己決定啦！😆</b>',
+          bad: '🚫🚫🚫 連續三擺「陰桮」，建議：<b>真正毋通喔！❌</b>',
+          ok:  '🎉🎉🎉 連續三擺「神桮」，建議：<b>做就著啦！😍</b>'
+        }
+      },
+      en: {
+        title: "Poa̍h-poe--lah!(Funny Decision Maker)",
+        askWhoLegend:"Who to ask?",
+        whoGod:"A deity",
+        whoAnc:"An ancestor (incl. passed relatives)",
+        whoUni:"The universe / unseen forces",
+        whoHelp:"Enter a deity’s title, or pick a different target.",
+        yourName:"Your name / nickname",
+        wish:"Question / intention",
+        cupLegend:"Choose your poe style",
+        cupHint:"Note: all styles are cosmetic; odds are identical.",
+        prayTitle:"Say a sincere prayer, then toss",
+        resTitle:"Response",
+        back:"Back",
+        next:"Next",
+        toss:"Toss / poa̍h-poe",
+        again:"Toss again",
+        // outcomes
+        ok:"Shèng-poe (OK): Approved — go for it!",
+        bad:"Im-poe (No): Not approved — try another way.",
+        meh:"Chhiò-poe (Hmm): Not clear yet — ask once more.",
+        // labels
+        who:"Target",
+        you:"Player",
+        topic:"Topic",
+        streak: {
+          meh: '❓❓❓ Three straight “Chhiò-poe (Hmm)”. Hint: <b>Make the call yourself!</b> 😆',
+          bad: '🚫🚫🚫 Three straight “Im-poe (No)”. Hint: <b>Probably a hard no.</b> ❌',
+          ok:  '🎉🎉🎉 Three straight “Shèng-poe (OK)”. Hint: <b>Go for it!</b> 😍'
+        }
+      }
+    };
+
+    // ===== state =====
+    const CUPS = REG_CUPS;
+    if (!CUPS || !CUPS.length) {
+      console.error('CUPS 載入失敗：請檢查 js/cups/manifest.js / registry.js');
+    }
+    const S = {
+      lang: localStorage.getItem('lang') || 'zh',
+      cup: CUPS?.[0]?.id || '',
+      whoType: 'god',
+    };
+
+    // ===== UI i18n =====
+    const langSel = $('#langSel');
+    function applyI18N(){
+      const t = I18N[S.lang] || I18N.zh;
+      $$('[data-i]').forEach(el=>{ const k = el.getAttribute('data-i'); if(t[k]) el.textContent = t[k]; });
+      document.title = t.title || '跋桮啦！(Poa̍h-poe--lah)';
+      const h1 = document.getElementById('appTitle');
+      if (h1) h1.textContent = t.title || '跋桮啦！(Poa̍h-poe--lah)';
+    }
+    langSel.value = S.lang; applyI18N();
+    langSel.addEventListener('change', () => {
+      S.lang = langSel.value;
+      localStorage.setItem('lang', S.lang);
+
+      applyI18N();                 // 換 UI 文案（按鈕/標題等）
+      rebuildCupList();            // 重建桮卡片（名稱跟著換語言）
+      syncPreviewsAndResult();     // 祈禱預覽 & 結果圖（含 alt）同步
+      buildPrayerText();           // 祈禱文換語言
+      buildResultLines(lastOutcome); // 結果區文案換語言
+    });
+
+    // ===== SFX =====
+    const SFX = {
+      toss: 'assets/sounds/toss.ogg',
+      ok:   'assets/sounds/ok.ogg',
+      bad:  'assets/sounds/bad.ogg',
+      meh:  'assets/sounds/meh.ogg',
+      select: 'assets/sounds/select.ogg'
+    };
+    function playSfx(name){
+      const src = SFX[name]; if(!src) return;
+      // 依不同音效給不同 duck 時長（可再微調）
+      const duckMs = (name === 'toss') ? 900 : 600;
+      duckBgm(0.22, duckMs);   // ✅ 播放 SFX 前先壓低 BGM
+
+      try { new Audio(src).play().catch(()=>{}); } catch(e){}
+    }
+
+    // ===== BGM duck/unduck（投擲與結果時壓低音量，完了再拉回） =====
+    let _duckTimer = null;
+    let _bgmPrevVol = 0.5; // 你的預設音量（見 playBgm 裡）
+
+    function duckBgm(toVol = 0.22, holdMs = 800){
+      if (!bgmAudio) return;
+      // 記住當前音量，只在未 duck 時記
+      if (_duckTimer === null) _bgmPrevVol = bgmAudio.volume;
+      bgmAudio.volume = Math.max(0, Math.min(1, toVol));
+      clearTimeout(_duckTimer);
+      _duckTimer = setTimeout(()=>{
+        if (bgmAudio) bgmAudio.volume = _bgmPrevVol;
+        _duckTimer = null;
+      }, holdMs);
+    }
+
+    // ===== 背景音樂（首頁可切換） =====
+    let bgmAudio = null;
+    let bgmMuted = false;
+    let currentBgmId = null;
+
+    function playBgm(id){
+      if (bgmAudio && currentBgmId === id && !bgmAudio.paused) return;
+      stopBgm({fadeOut:false});
+      if (!id) return;
+      currentBgmId = id;
+
+      const src = `assets/sounds/${id}.ogg`;
+      bgmAudio = new Audio(src);
+      bgmAudio.loop = true;
+      bgmAudio.muted = bgmMuted;
+      bgmAudio.volume = 0.5;
+      bgmAudio.play().catch(()=>{});
+    }
+
+    function stopBgm({fadeOut=true} = {}){
+      if (!bgmAudio) return;
+      if (!fadeOut){
+        bgmAudio.pause();
+        bgmAudio = null;
+        currentBgmId = null;
+        return;
+      }
+      const a = bgmAudio;
+      const fade = setInterval(()=>{
+        if (!a) { clearInterval(fade); return; }
+        a.volume = Math.max(0, a.volume - 0.05);
+        if (a.volume <= 0.01){
+          clearInterval(fade);
+          a.pause();
+          if (bgmAudio === a) {
+            bgmAudio = null;
+            currentBgmId = null;
+          }
+        }
+      }, 100);
+    }
+
+    // Mute 鈕
+    $('#btnMute').addEventListener('click', ()=>{
+      bgmMuted = !bgmMuted;
+      if (bgmAudio) bgmAudio.muted = bgmMuted;
+      $('#btnMute').textContent = bgmMuted ? '音樂關閉 🔇' : '背景音樂 🔈';
+    });
+
+    // 下拉切換
+    const bgmSel = $('#bgmSel');
+    bgmSel.addEventListener('change', ()=>{
+      const id = bgmSel.value;
+      playBgm(id);
+    });
+
+    // 初始化：自動播放預設 bg_01（待使用者互動後）
+    document.body.addEventListener('click', ()=>{
+      if (!bgmAudio) playBgm('bg_01');
+    }, { once: true });
+
+    // ===== setup helpers =====
+    function getRadio(name){ return (document.querySelector(`input[name="${name}"]:checked`)||{}).value; }
+    function readSetup(){
+      const whoType = getRadio('who');
+      const whoName = (whoType==='god')? $('#whoName').value.trim() : (whoType==='ancestor')? $('#ancName').value.trim() : '';
+      return {
+        whoType, whoName,
+        player: $('#player').value.trim() || '玩家',
+        wish:   $('#wish').value.trim() || '（未輸入）',
+        cup:    S.cup
+      }
+    }
+    function buildPrayerText(){
+      const t = I18N[S.lang]; const s = readSetup();
+      const who =
+        s.whoType==='god'      ? (s.whoName || (S.lang==='tl'?'某尊神明': S.lang==='en'?'a deity':'某尊神明')) :
+        s.whoType==='ancestor' ? (s.whoName || (S.lang==='tl'?'某位祖先': S.lang==='en'?'an ancestor':'某mí祖先')) :
+                                  (S.lang==='tl'?'宇宙天地冥冥之中力量' : S.lang==='en'?'the universe and unseen forces':'宇宙天地冥冥之中力量');
+
+      let line;
+      if (S.lang==='tl'){
+        line = `🙏${who}🙏，信徒${s.player}虔誠祈求，為著「${s.wish}」請示指教。`;
+      } else if (S.lang==='en'){
+        line = `Dear ${who}, I (${s.player}) sincerely ask for guidance regarding: “${s.wish}”.`;
+      } else { // zh
+        line = `${who}在上，信徒（${s.player}）誠心祈求，為「${s.wish}」請示指引。`;
+      }
+      $('#prayText').textContent = line;
+    }
+
+    function cupLabel(c){
+      if (c && typeof c.name === 'object') {
+        return c.name[S.lang] || c.name.tl || c.name.en || c.name.zh || Object.values(c.name)[0];
+      }
+      return c?.name || '';
+    }
+
+    // ===== build cup list =====
+    const cupList = $('#cupList');
+
+    function rebuildCupList(){
+      cupList.innerHTML = '';
+      CUPS.forEach(c=>{
+        const btn = document.createElement('button');
+        btn.className='card';
+        btn.type='button';
+        btn.setAttribute('role','option');
+        btn.setAttribute('aria-pressed', c.id===S.cup?'true':'false');
+        btn.dataset.id = c.id;
+        btn.innerHTML = `<div class="thumb">${c.render('yang')}</div><span class="label">${cupLabel(c)}</span>`;
+        btn.addEventListener('click',()=>{
+          playSfx('select'); // 🔊 點選提示音
+          S.cup = c.id; $$('.card').forEach(x=>x.setAttribute('aria-pressed','false')); btn.setAttribute('aria-pressed','true');
+          const cup = CUPS.find(x=>x.id===S.cup)||CUPS[0];
+          $('#previewL').innerHTML = cup.render('yang');
+          $('#previewR').innerHTML = cup.render('yin');
+        });
+        cupList.appendChild(btn);
+      });
+    }
+    // ===== 語言切換時，預覽/結果也同步重畫（含 alt）=====
+    function syncPreviewsAndResult() {
+      const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
+
+      // 祈禱頁兩顆預覽
+      const pl = document.getElementById('previewL');
+      const pr = document.getElementById('previewR');
+      if (pl && pr && cup) {
+        pl.innerHTML = cup.render('yang');
+        pr.innerHTML = cup.render('yin');
+      }
+
+      // 若目前在結果頁，依最後一次 outcome 重畫左右桮
+      const resSection = document.getElementById('page-result');
+      if (resSection && resSection.hidden === false && lastOutcome && cup) {
+        const l = document.getElementById('resL');
+        const r = document.getElementById('resR');
+        if (l) l.innerHTML = cup.render(lastOutcome.L);
+        if (r) r.innerHTML = cup.render(lastOutcome.R);
+      }
+    }
+
+  // 投擲 → 先彈跳(.cup) → 發光+左右擺動 → 輕晃收尾
+  function applyTossAndShake(el, type){
+    const cup = el.closest('.cup') || el;
+
+    // 先清乾淨，避免殘留導致重播
+    [el, cup].forEach(x => x && x.classList.remove('toss','bounce','sway','shake','glow'));
+    void el.offsetWidth; // reflow
+
+    const TOSS_MS   = 900;  // .toss 0.9s
+    const BOUNCE_MS = 800;  // .bounceStrong 0.8s
+    const SWAY_MS   = 1100; // .sway 1.1s
+    const SHAKE_MS  = 600;  // .shake 0.6s
+
+    // 1) 投擲
+    el.classList.add('toss');
+
+    setTimeout(() => {
+      el.classList.remove('toss');
+
+      // 2) 先彈（只套在 .cup）
+      cup.classList.add('bounce');
+
+      setTimeout(() => {
+        // 👉 彈跳結束立刻拔掉，避免之後又被觸發
+        cup.classList.remove('bounce');
+
+        // 3) 發光 + 左右擺
+        if (type) el.dataset.outcome = type; // ok / bad / meh
+        el.classList.add('glow','sway');
+
+        setTimeout(() => {
+          // 4) 輕晃收尾
+          el.classList.remove('sway');
+          el.classList.add('shake');
+
+          setTimeout(() => {
+            // 5) 清理
+            el.classList.remove('shake','glow');
+            delete el.dataset.outcome;
+          }, SHAKE_MS);
+        }, SWAY_MS);
+      }, BOUNCE_MS);
+    }, TOSS_MS);
+  }
+
+    // ===== navigation =====
+    const PAGES = ['setup','pray','result'];
+    function show(page){
+      PAGES.forEach(p=>{ const el = $('#page-'+p); if(el) el.hidden = (p!==page); });
+      $('#btnBack').hidden = (page==='setup');
+      $('#btnNext').hidden = (page!=='setup');
+      $('#btnToss').hidden = (page!=='pray');
+      $('#btnAgain').hidden = (page!=='result');
+        // ✅ 只有結果頁時啟用緊湊布局
+      document.body.classList.toggle('is-result', page === 'result');
+    }
+
+    // ===== toss logic =====
+    let lastOutcome = null; // {L:'yin|yang', R:'yin|yang', type:'ok|bad|meh'}
+    function toss(){
+      playSfx('toss');
+      const sides = ['yin','yang'];
+      const L = sides[Math.random()<0.5?0:1];
+      const R = sides[Math.random()<0.5?0:1];
+      let type;
+      if((L==='yin' && R==='yang') || (L==='yang' && R==='yin')) type='ok';
+      else if(L==='yang' && R==='yang') type='bad';
+      else type='meh';
+      lastOutcome = {L,R,type};
+
+      const cup = CUPS.find(c=>c.id===S.cup) || CUPS[0];
+      const l = $('#resL'), r = $('#resR');
+      l.innerHTML = cup.render(lastOutcome.L); applyTossAndShake(l, type); setTimeout(()=>l.classList.remove('toss'), 950);
+      r.innerHTML = cup.render(lastOutcome.R); applyTossAndShake(r, type); setTimeout(()=>r.classList.remove('toss'), 950);
+
+      const t = I18N[S.lang];
+      const badge = $('#badge');
+      badge.className = 'badge ' + (lastOutcome.type==='ok'?'ok': lastOutcome.type==='bad'?'bad':'meh');
+      badge.textContent = lastOutcome.type==='ok'? t.ok : lastOutcome.type==='bad'? t.bad : t.meh;
+
+      buildResultLines(lastOutcome);
+      setTimeout(()=> playSfx(type), 120); // 投擲聲後補結果聲
+    }
+
+    // ===== result lines =====
+    function buildResultLines(outcome){
+      const t = I18N[S.lang]; const s = readSetup(); if(!outcome) return;
+      const who = s.whoType==='god' ? (s.whoName|| (S.lang==='tl'?'某位神明':'某位神明'))
+                : s.whoType==='ancestor'? (s.whoName|| (S.lang==='tl'?'某位祖先':'某位祖先'))
+                : (S.lang==='tl'?'宇宙天地冥冥之中力量':'宇宙天地冥冥之中力量');
+      const box = $('#resLines'); box.innerHTML='';
+      const add = (label, text)=>{ const d = document.importNode($('#tpl-line').content,true); d.querySelector('div').innerHTML = `<b>${label}：</b> ${escapeHtml(text)}`; box.appendChild(d); };
+      add(t.who, who);
+      add(t.you, s.player);
+      add(t.topic, s.wish);
+      // 彩蛋：偵測三連發
+      historyPush(outcome.type);
+      const tStreak = I18N[S.lang]?.streak;
+
+      const eggBox = document.createElement('div');
+      eggBox.className = 'small';
+
+      if (checkStreak(['ok','ok','ok']) && tStreak?.ok) {
+        eggBox.innerHTML = tStreak.ok;
+        box.appendChild(eggBox);
+      } else if (checkStreak(['bad','bad','bad']) && tStreak?.bad) {
+        eggBox.innerHTML = tStreak.bad;
+        box.appendChild(eggBox);
+      } else if (checkStreak(['meh','meh','meh']) && tStreak?.meh) {
+        eggBox.innerHTML = tStreak.meh;
+        box.appendChild(eggBox);
+      }
+
+      // === 淡入顯示彩蛋 ===
+      if (box.querySelector('.small')) {
+        const egg = box.querySelector('.small:last-child');
+        requestAnimationFrame(() => egg.classList.add('show'));
+      }
+    }
+
+    // ===== misc utils =====
+    const hist = [];
+    function historyPush(type){ hist.push(type); if(hist.length>9) hist.shift(); }
+    function checkStreak(seq){ if(hist.length < seq.length) return false; const n = seq.length; for(let i=0;i<=hist.length-n;i++){ if(seq.every((v,k)=>hist[i+k]===v)) return true; } return false; }
+    function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+
+    // ===== buttons =====
+    $('#btnNext').addEventListener('click',()=>{
+      buildPrayerText();
+      const cup = CUPS.find(c=>c.id===S.cup)||CUPS[0];
+      $('#previewL').innerHTML = cup.render('yang');
+      $('#previewR').innerHTML = cup.render('yin');
+      show('pray');
+
+     // ✅ 進祈禱頁後依選項播放 BGM
+     const bgmId = document.querySelector('input[name="bgm"]:checked')?.value;
+     if (bgmId) playBgm(bgmId, {fadeIn:true});
+   });
+    $('#btnBack').addEventListener('click',()=>{ show('setup'); });
+    $('#btnToss').addEventListener('click', ()=>{
+      // 清掉祈禱頁的浮動預覽，避免殘影/誤會
+      $('#previewL').innerHTML = '';
+      $('#previewR').innerHTML = '';
+      show('result');
+      toss();
+      // 捲到最上面，確保只看得到結果頁
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    $('#btnAgain').addEventListener('click', ()=>{
+      toss();                 // 直接重擲
+      show('result');         // 保持在結果頁
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ===== 可摺疊 fieldset（自動套用到設定頁） =====
+  function makeFieldsetFoldable(fs, {open=false, storageKey} = {}){
+    if (!fs || fs.classList.contains('folded-ready')) return;
+    fs.classList.add('fold','folded-ready');
+
+    // 讀取儲存狀態（優先於 open 參數）
+    const key = storageKey || `fold:${fs.id || fs.querySelector('legend')?.textContent || 'unnamed'}`;
+    const saved = localStorage.getItem(key);
+    const shouldOpen = saved ? (saved === '1') : !!open;
+
+    // 取出 legend，其餘孩子包成內容區
+    const legend = fs.querySelector('legend') || fs.insertAdjacentElement('afterbegin', document.createElement('legend'));
+    const content = document.createElement('div');
+    content.className = 'fold-content';
+    while (legend.nextSibling) content.appendChild(legend.nextSibling); // 全部移入
+    fs.appendChild(content);
+
+    // 重新組 legend：文字 + caret
+    const textSpan = document.createElement('span');
+    textSpan.className = 'legend-text';
+    textSpan.textContent = legend.textContent.trim() || '內容';
+    legend.textContent = '';
+    legend.appendChild(textSpan);
+
+    const caret = document.createElement('i');
+    caret.className = 'caret';
+    legend.appendChild(caret);
+
+    // 可點擊切換
+    fs.setAttribute('aria-expanded', shouldOpen ? 'true':'false');
+    if (shouldOpen){
+      // 先讓它能展開到合適高度（先算內容高度）
+      requestAnimationFrame(()=>{ fs.setAttribute('aria-expanded','true'); });
+    }
+
+    legend.addEventListener('click', ()=>{
+      const openNow = fs.getAttribute('aria-expanded') === 'true';
+      fs.setAttribute('aria-expanded', openNow ? 'false' : 'true');
+      localStorage.setItem(key, openNow ? '0' : '1');
+    });
+  }
+
+  // 把設定頁的三個區塊變成可摺疊
+  function setupAccordion(){
+    // 你現在的設定頁有三塊：求問對象 / 基本資料 / 桮樣式
+    // 依實際 fieldset 順序自動套用：第 1 塊展開，其餘收合
+    const sets = Array.from(document.querySelectorAll('#page-setup fieldset'));
+    sets.forEach((fs, idx)=>{
+      makeFieldsetFoldable(fs, { open: idx === 0, storageKey: `poah:fold:${idx}` });
+    });
+  }
+
+    // ===== init =====
+    rebuildCupList();
+    setupAccordion();
+    show('setup');
+    bindBgmRadios();
+    $$('input[name="who"]').forEach(r=>{
+      r.addEventListener('change',()=>{
+        const v = getRadio('who'); S.whoType=v;
+        $('#whoName').disabled = v!=='god';
+        $('#ancName').disabled = v!=='ancestor';
+      });
+    });
+    $('#whoName').disabled=false; $('#ancName').disabled=true;
+
+    // Keyboard: press Enter/Space to toss on pray page
+    document.addEventListener('keydown',(e)=>{
+      if(!$('#page-pray').hidden && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); $('#btnToss').click(); }
+    });
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+    });
+  }
+  </script>
+</body>
+</html>
