@@ -1051,60 +1051,96 @@ body.is-result #resLines .small{
     }, TOSS_MS);
   }
 
+    // ===== misc utils =====
+  const hist = [];
+  function historyPush(type){ hist.push(type); if(hist.length>9) hist.shift(); }
+  function checkStreak(seq){
+    if(hist.length < seq.length) return false;
+    const n = seq.length;
+    for(let i=0;i<=hist.length-n;i++){
+      if(seq.every((v,k)=>hist[i+k]===v)) return true;
+    }
+    return false;
+  }
+  function resetStreak(){ hist.length = 0; }   // ✅ 重置彩蛋
+  function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+
+  // 小工具：把結果頁的 UI 一起清乾淨
+  function clearResultUI(){
+    $('#resLines')?.replaceChildren();
+    const badge = $('#badge');
+    if (badge){ badge.className = 'badge'; badge.textContent = ''; }
+    $('#resL')?.replaceChildren();
+    $('#resR')?.replaceChildren();
+  }
+
   // ===== navigation（Hash 路由：四步流程）=====
   const PAGES = ['setup1','setup2','pray','result'];
 
   function show(page){
     PAGES.forEach(p=>{
       const el = document.getElementById('page-'+p);
-      if (el) el.hidden = (p!==page);
+      if (el) el.hidden = (p !== page);
     });
-    $('#btnBack').hidden  = (page==='setup1');
-    $('#btnNext').hidden  = (page==='result');
-    $('#btnToss').hidden  = (page!=='pray');
-    $('#btnAgain').hidden = (page!=='result');
 
-    document.body.classList.toggle('is-result', page==='result');
-    window.scrollTo({top:0, behavior:'smooth'});
+    // 工具列按鈕顯示規則
+    const onSetup1 = page === 'setup1';
+    const onSetup2 = page === 'setup2';
+    const onPray   = page === 'pray';
+    const onResult = page === 'result';
 
-    if (page==='pray'){ buildPrayerText(); renderPrayPreviews(); }
-    if (page==='result'){ ensureResultHolders(); }
+    $('#btnNext').hidden  = !(onSetup1 || onSetup2);  // [下一步]：只在 Step1 & Step2 顯示
+    $('#btnBack').hidden  = onSetup1;  // [回設定]：除了 Step1 以外都顯示
+    $('#btnToss').hidden  = !onPray;  // [跋桮]：只在祈禱頁顯示
+    $('#btnAgain').hidden = !onResult;   // [再跋一擺]：只在結果頁顯示
+
+    document.body.classList.toggle('is-result', onResult);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (onPray){ buildPrayerText(); renderPrayPreviews(); }
+    if (onResult){ ensureResultHolders(); }
   }
 
   function currentPageFromHash(){
     const h = (location.hash || '').replace(/^#\//,'').trim();
-    return PAGES.includes(h)?h:'setup1';
+    return PAGES.includes(h) ? h : 'setup1';
   }
-  function goto(page){ location.hash = '#/'+(PAGES.includes(page)?page:'setup1'); }
+  function goto(page){ location.hash = '#/' + (PAGES.includes(page)?page:'setup1'); }
 
   if (!location.hash) location.hash = '#/setup1';
-  window.addEventListener('hashchange', ()=> show(currentPageFromHash()));
+  window.addEventListener('hashchange', ()=>{
+    const p = currentPageFromHash();
+    show(p);
+    // ✅ 若是直接進到 Step2（而且之前有丟過一次），也重置 + 清 UI
+    if (p === 'setup2' && ($('#badge')?.textContent || $('#resLines')?.children?.length)) {
+      resetStreak();
+      clearResultUI();
+    }
+  });
   show(currentPageFromHash());
 
   // ===== buttons（依目前頁面流向下一步）=====
-  $('#btnNext').addEventListener('click',()=>{
-    const now = currentPageFromHash();
-    if (now==='setup1'){
-      goto('setup2');
-    } else if (now==='setup2'){
-      // 準備祈禱頁內容
+  $('#btnNext').addEventListener('click', ()=>{
+    const cur = currentPageFromHash();
+    if (cur === 'setup1') {
+      goto('setup2');               // Step1 -> Step2
+    } else if (cur === 'setup2') {
       buildPrayerText();
-      const cup = CUPS.find(c=>c.id===S.cup)||CUPS[0];
-      renderCupInto($('#previewL'), cup, 'yang');
-      renderCupInto($('#previewR'), cup, 'yin');
-      goto('pray');
-      const bgmId = $('#bgmSel')?.value;
-      if (bgmId) playBgm(bgmId);
-    } else if (now==='pray'){
-      goto('result');
+      renderPrayPreviews();
+      goto('pray');                 // Step2 -> Step3
     }
   });
 
-  $('#btnBack').addEventListener('click',()=>{
-    const now = currentPageFromHash();
-    if (now==='setup2') goto('setup1');
-    else if (now==='pray') goto('setup2');
-    else if (now==='result') goto('pray');
+  $('#btnBack').addEventListener('click', ()=>{
+    const cur = currentPageFromHash();
+    if (cur === 'setup2') {
+      goto('setup1');                      // Step2 -> Step1
+    } else if (cur === 'pray' || cur === 'result') {
+      // ✅ 只有從祈禱/結果頁回到 Step2 才重置彩蛋 + 清 UI
+      resetStreak();
+      clearResultUI();
+      goto('setup2');                      // 回到選桮頁
+    }
   });
 
   $('#btnToss').addEventListener('click', ()=>{
@@ -1116,8 +1152,8 @@ body.is-result #resLines .small{
   });
 
   $('#btnAgain').addEventListener('click', ()=>{
-    toss();
-    goto('result');
+    goto('pray');            // 回到祈禱頁
+    // show('pray') 會自動 buildPrayerText() + renderPrayPreviews()
   });
 
     // ===== toss logic =====
@@ -1186,12 +1222,6 @@ body.is-result #resLines .small{
         requestAnimationFrame(() => egg.classList.add('show'));
       }
     }
-
-    // ===== misc utils =====
-    const hist = [];
-    function historyPush(type){ hist.push(type); if(hist.length>9) hist.shift(); }
-    function checkStreak(seq){ if(hist.length < seq.length) return false; const n = seq.length; for(let i=0;i<=hist.length-n;i++){ if(seq.every((v,k)=>hist[i+k]===v)) return true; } return false; }
-    function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 
     // ===== 可摺疊 fieldset（自動套用到設定頁） =====
   function makeFieldsetFoldable(fs, {open=false, storageKey} = {}){
