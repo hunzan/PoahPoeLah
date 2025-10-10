@@ -40,6 +40,9 @@
   h1{ font-size:22px; margin:0 8px 0 0; }
   .lang{ margin-left:auto; }
 
+  /* 確保 hidden 真的隱形、不可聚焦、從無障礙樹移除 */
+  [hidden]{ display:none !important; }
+
   /* =========
    *  Controls
    * ========= */
@@ -912,6 +915,9 @@
     const onPray   = page === 'pray';
     const onResult = page === 'result';
 
+    // ▼▼ 只在第一頁顯示語言選單（<div class="lang">…</div>） ▼▼
+    document.querySelector('.lang')?.toggleAttribute('hidden', !onSetup1);
+
     $('#btnNext').hidden  = !(onSetup1 || onSetup2);  // [下一步]：只在 Step1 & Step2 顯示
     $('#btnBack').hidden  = onSetup1;  // [回設定]：除了 Step1 以外都顯示
     $('#btnToss').hidden  = !onPray;  // [跋桮]：只在祈禱頁顯示
@@ -1102,7 +1108,7 @@
     // ===== init =====
     rebuildCupList();     // 先把卡片畫出來
     setupAccordion();     // 再把設定頁三個區塊掛上摺疊行為
-    show('setup');        // 進入設定頁
+    show('setup1');        // 進入設定頁
     $$('input[name="who"]').forEach(r=>{
       r.addEventListener('change',()=>{
         const v = getRadio('who'); S.whoType=v;
@@ -1136,6 +1142,39 @@
         });
       });
     }
+  </script>
+  <script>
+    (function () {
+      // 如果你保留整頁滾動，就監聽 window；如果你把滾動限定在 main，就改成 const SCROLLER = document.querySelector('main');
+      const SCROLLER = window;
+
+      let startY = 0;
+
+      // 記錄手指起始 Y
+      window.addEventListener('touchstart', (e) => {
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+        startY = t.clientY;
+      }, { passive: true });
+
+      // 在「已經在頂端」且「手指往下拉」時，阻止預設（避免 iOS 橡皮筋 & PWA 空白）
+      window.addEventListener('touchmove', (e) => {
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+
+        // 當前滾動位置（整頁時用 window.scrollY；如果 main 是滾動容器，就改用 main.scrollTop）
+        const scrollTop = (SCROLLER === window)
+          ? window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0
+          : SCROLLER.scrollTop;
+
+        const deltaY = t.clientY - startY;   // 往下拉時為正值
+
+        if (scrollTop <= 0 && deltaY > 0) {
+          // 在頂端又往下拉 → 阻止預設，避免觸發瀏覽器橡皮筋/刷新
+          e.preventDefault();
+        }
+      }, { passive: false });
+    })();
   </script>
   <script>
   if ('serviceWorker' in navigator) {
