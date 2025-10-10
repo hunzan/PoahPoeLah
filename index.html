@@ -358,6 +358,19 @@
     #page-pray .cup svg { animation: none !important; }
     #page-pray .cup::after { animation: none !important; opacity: .5; }
   }
+  /* === 結果頁對齊修正：置中顯示，不再上提過頭 === */
+  body.is-result #page-result{
+    margin-top: 0 !important;            /* 取消原先的負上提 */
+    min-height: calc(100svh - 152px);    /* 視窗高 - (header+toolbar) 的估值 */
+    display: grid;
+    align-content: center;               /* 垂直置中內容 */
+  }
+
+  /* 結果頁的兩顆杯圖：水平置中，保留你原本的下方間距變數 */
+  #page-result .dice{
+    justify-content: center;
+    margin: 0 0 var(--res-dice-bottom) !important;
+  }
   </style>
 
 </head>
@@ -927,7 +940,10 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (onPray){ buildPrayerText(); renderPrayPreviews(); }
-    if (onResult){ ensureResultHolders(); }
+    if (onResult){
+      ensureResultHolders();
+      _updateResultMinHeight();
+    }
   }
 
   function currentPageFromHash(){
@@ -1051,6 +1067,20 @@
         requestAnimationFrame(() => egg.classList.add('show'));
       }
     }
+
+  function _updateResultMinHeight(){
+    const res = document.getElementById('page-result');
+    if (!res) return;
+    const header = document.querySelector('header')?.offsetHeight || 64;
+    const toolbar = document.querySelector('.toolbar')?.offsetHeight || 72;
+    const mainPad = 16 * 2; // main 上下 padding 合計（你現在是 16px）
+    const h = Math.max(280, window.innerHeight - (header + toolbar + mainPad));
+    res.style.minHeight = h + 'px';
+  }
+
+  // 進到結果頁時算一次；旋轉/縮放也重算
+  window.addEventListener('resize', _updateResultMinHeight);
+  window.addEventListener('orientationchange', _updateResultMinHeight);
 
     // ===== 可摺疊 fieldset（自動套用到設定頁） =====
   function makeFieldsetFoldable(fs, {open=false, storageKey} = {}){
