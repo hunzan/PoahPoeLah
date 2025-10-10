@@ -1040,11 +1040,19 @@
 
     const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
     const l = $('#resL'), r = $('#resR');
+
+    // 先把圖塞進去
     if (l) renderCupInto(l, cup, lastOutcome.L);
     if (r) renderCupInto(r, cup, lastOutcome.R);
 
-    if (l) applyTossAndShake(l, type);
-    if (r) applyTossAndShake(r, type);
+    // ✅ 等一幀（讓布局/繪製完成），再套動畫 class
+    requestAnimationFrame(() => {
+      // 強制 reflow，確保動畫從「靜止狀態」開始
+      l && l.offsetWidth; r && r.offsetWidth;
+
+      if (l) applyTossAndShake(l, type);
+      if (r) applyTossAndShake(r, type);
+    });
 
     const t = I18N[S.lang];
     const badge = $('#badge');
