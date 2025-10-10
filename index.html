@@ -557,38 +557,42 @@ body.is-result #resLines .small{
   </div>
   </header>
   <main>
-    <!-- ===== Step 1. 設定頁 ===== -->
-    <section id="page-setup" aria-labelledby="setupTitle">
-      <h2 id="setupTitle" class="sr-only">設定</h2>
-      <div class="row" id="setupForm">
-        <fieldset>
-          <legend data-i="askWhoLegend">求問對象</legend>
-          <div class="row">
-            <label><input type="radio" name="who" value="god" checked> <span data-i="whoGod">某尊神明（輸入神明稱號）</span></label>
-            <input id="whoName" type="text" placeholder="媽祖／關聖帝君／耶穌…" aria-describedby="whoHelp" />
-            <label><input type="radio" name="who" value="ancestor"> <span data-i="whoAnc">某位祖先（或過世親人）</span></label>
-            <input id="ancName" type="text" placeholder="阿公／阿嬤／阿祖…" />
-            <label><input type="radio" name="who" value="universe"> <span data-i="whoUni">向宇宙天地冥冥之中力量求問</span></label>
-          </div>
-        </fieldset>
-        <label>
-          <span data-i="yourName">求問者姓名／暱稱</span>
-          <input id="player" type="text" placeholder="輸入你的名字／暱稱" />
-        </label>
-        <label>
-          <span data-i="wish">求問事項</span>
-          <textarea id="wish"></textarea>
-        </label>
+  <!-- ===== Step 1. 求問設定 ===== -->
+  <section id="page-setup1" aria-labelledby="setupTitle">
+    <h2 id="setupTitle" class="sr-only">設定</h2>
+    <div class="row" id="setupForm">
+      <fieldset>
+        <legend data-i="askWhoLegend">求問對象</legend>
+        <div class="row">
+          <label><input type="radio" name="who" value="god" checked> <span data-i="whoGod">某尊神明（輸入神明稱號）</span></label>
+          <input id="whoName" type="text" placeholder="媽祖／關聖帝君／耶穌…" aria-describedby="whoHelp" />
+          <label><input type="radio" name="who" value="ancestor"> <span data-i="whoAnc">某位祖先（或過世親人）</span></label>
+          <input id="ancName" type="text" placeholder="阿公／阿嬤／阿祖…" />
+          <label><input type="radio" name="who" value="universe"> <span data-i="whoUni">向宇宙天地冥冥之中力量求問</span></label>
+        </div>
+      </fieldset>
 
-        <fieldset>
-          <legend data-i="cupLegend">選擇桮の樣式</legend>
-          <div id="cupList" class="cards" role="listbox" aria-label="杯樣式"></div>
-          <div class="small" data-i="cupHint">🔔小提醒：不同樣式只是外觀，靈驗度無差喔～</div>
-        </fieldset>
-      </div>
-    </section>
+      <label>
+        <span data-i="yourName">求問者姓名／暱稱</span>
+        <input id="player" type="text" placeholder="輸入你的名字／暱稱" />
+      </label>
 
-    <!-- ===== Step 2. 祈禱頁 ===== -->
+      <label>
+        <span data-i="wish">求問事項</span>
+        <textarea id="wish"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <!-- ===== Step 2. 選擇桮款式 ===== -->
+  <section id="page-setup2" aria-labelledby="cupTitle" hidden>
+    <h2 id="cupTitle">選擇桮款式</h2>
+    <div id="cupList" class="cards" role="listbox" aria-label="杯款式"></div>
+    <div class="small" data-i="cupHint">🔔 小提醒：無仝款式只是外形，靈驗度無差喔～</div>
+  </section>
+
+
+    <!-- ===== Step 3. 祈禱頁 ===== -->
     <section id="page-pray" hidden aria-labelledby="prayTitle" class="center">
       <div style="width:100%">
         <h2 id="prayTitle" data-i="prayTitle">先誠心祈禱，再跋桮</h2>
@@ -600,7 +604,7 @@ body.is-result #resLines .small{
       </div>
     </section>
 
-    <!-- ===== Step 3. 結果頁 ===== -->
+    <!-- ===== Step 4. 結果頁 ===== -->
     <section id="page-result" hidden aria-labelledby="resTitle">
       <h2 id="resTitle" data-i="resTitle">指示結果</h2>
       <div class="dice">
@@ -660,6 +664,8 @@ body.is-result #resLines .small{
         whoHelp:"輸入神明稱號，或改選其他對象", yourName:"求問者姓名／暱稱", wish:"求問事項",
         cupLegend:"❤️ 按下選筊", cupHint:"小提醒：不同樣式只是外觀，機率一樣啦～",
         prayTitle:"先誠心祈禱，再擲筊", resTitle:"指示結果",
+        muteAllOn:  "🔇 全部靜音",
+        muteAllOff: "🔈 開啟聲音",
         back:"回設定", next:"下一步", toss:"擲筊", again:"再擲一次",
         ok:"聖杯：得到應允，去做就對了！",
         bad:"陰杯：神明說不行，換個方法吧。",
@@ -676,6 +682,8 @@ body.is-result #resLines .small{
         whoHelp:"輸入神明稱號，或改選其他對象", yourName:"求問者姓名／暱稱", wish:"求問事項",
         cupLegend:"❤️ 揤遮選桮", cupHint:"提示：款式仝款，機率袂變～",
         prayTitle:"誠心祈求了後，揤落去跋桮", resTitle:"指示結果",
+        muteAllOn:  "🔇 全部靜音",
+        muteAllOff: "🔈 放送聲音",
         back:"倒轉--去", next:"後一步", toss:"跋桮 / poa̍h-poe", again:"閣跋一擺",
         ok:"神桮（sîn-poe / siūⁿ-poe）：得著應允，你ê祈求會實現！",
         bad:"陰桮（im-poe / bô-poe）：毋通喔，換一款做法。",
@@ -698,6 +706,8 @@ body.is-result #resLines .small{
         wish:"Question / intention",
         cupLegend:"❤️ Press to Choose Poe style",
         cupHint:"Note: all styles are cosmetic; odds are identical.",
+        muteAllOn:  "🔇 Mute all",
+        muteAllOff: "🔈 Sound on",
         prayTitle:"Say a sincere prayer, then toss",
         resTitle:"Response",
         back:"Back",
@@ -739,7 +749,32 @@ body.is-result #resLines .small{
       syncPreviewsAndResult();     // 祈禱預覽 & 結果圖（含 alt）同步
       buildPrayerText();           // 祈禱文換語言
       buildResultLines(lastOutcome); // 結果區文案換語言
+      updateMuteUI();  // 讓「靜音/開聲音」文字跟著語言切換
     });
+
+    // ===== Global Mute（含 BGM + SFX）=====
+  let audioMuted = JSON.parse(localStorage.getItem('audioMuted') || 'false');
+
+  function updateMuteUI(){
+    const t = I18N[S.lang] || {};
+    $('#btnMute').textContent = audioMuted ? (t.muteAllOn || '🔇 全部靜音')
+                                           : (t.muteAllOff || '🔈 開啟聲音');
+    $('#btnMute').setAttribute('aria-pressed', String(audioMuted));
+  }
+
+  function setAudioMuted(muted){
+    audioMuted = !!muted;
+    localStorage.setItem('audioMuted', JSON.stringify(audioMuted));
+    updateMuteUI();
+
+    // 關閉時立刻停 BGM；開啟時若有選擇則恢復播放
+    if (audioMuted) {
+      stopBgm({ fadeOut:false });
+    } else {
+      const want = currentBgmId || $('#bgmSel')?.value;
+      if (want) playBgm(want);
+    }
+  }
 
     // ===== SFX =====
     const SFX = {
@@ -749,49 +784,59 @@ body.is-result #resLines .small{
       meh:  'assets/sounds/meh.ogg',
       select: 'assets/sounds/select.ogg'
     };
-    function playSfx(name){
-      const src = SFX[name]; if(!src) return;
-      // 依不同音效給不同 duck 時長（可再微調）
-      const duckMs = (name === 'toss') ? 900 : 600;
-      duckBgm(0.22, duckMs);   // ✅ 播放 SFX 前先壓低 BGM
 
-      try { new Audio(src).play().catch(()=>{}); } catch(e){}
-    }
+  function playSfx(name){
+    if (audioMuted) return;                 // 🔕 全域靜音：不播
+    const src = SFX[name]; if(!src) return;
+
+    // 依不同音效給不同 duck 時長（可再微調）
+    const duckMs = (name === 'toss') ? 900 : 600;
+    duckBgm(0.22, duckMs);
+
+    try {
+      const a = new Audio(src);
+      a.muted = false;                      // 明確不靜音（交由 audioMuted 控制）
+      a.volume = 1.0;
+      a.play().catch(()=>{});
+    } catch(e){}
+  }
 
     // ===== BGM duck/unduck（投擲與結果時壓低音量，完了再拉回） =====
     let _duckTimer = null;
     let _bgmPrevVol = 0.5; // 你的預設音量（見 playBgm 裡）
 
-    function duckBgm(toVol = 0.22, holdMs = 800){
-      if (!bgmAudio) return;
-      // 記住當前音量，只在未 duck 時記
-      if (_duckTimer === null) _bgmPrevVol = bgmAudio.volume;
-      bgmAudio.volume = Math.max(0, Math.min(1, toVol));
-      clearTimeout(_duckTimer);
-      _duckTimer = setTimeout(()=>{
-        if (bgmAudio) bgmAudio.volume = _bgmPrevVol;
-        _duckTimer = null;
-      }, holdMs);
-    }
+  function duckBgm(toVol = 0.22, holdMs = 800){
+    if (audioMuted) return;                 // 🔕 靜音時不要動 BGM
+    if (!bgmAudio) return;
+    if (_duckTimer === null) _bgmPrevVol = bgmAudio.volume;
+    bgmAudio.volume = Math.max(0, Math.min(1, toVol));
+    clearTimeout(_duckTimer);
+    _duckTimer = setTimeout(()=>{
+      if (bgmAudio) bgmAudio.volume = _bgmPrevVol;
+      _duckTimer = null;
+    }, holdMs);
+  }
 
     // ===== 背景音樂（首頁可切換） =====
     let bgmAudio = null;
     let bgmMuted = false;
     let currentBgmId = null;
 
-    function playBgm(id){
-      if (bgmAudio && currentBgmId === id && !bgmAudio.paused) return;
-      stopBgm({fadeOut:false});
-      if (!id) return;
-      currentBgmId = id;
+  function playBgm(id){
+    if (!id) return;
+    currentBgmId = id;
 
-      const src = `assets/sounds/${id}.ogg`;
-      bgmAudio = new Audio(src);
-      bgmAudio.loop = true;
-      bgmAudio.muted = bgmMuted;
-      bgmAudio.volume = 0.5;
-      bgmAudio.play().catch(()=>{});
-    }
+    // 🔕 全域靜音：直接不播，保持 state 即可
+    if (audioMuted) return;
+
+    stopBgm({fadeOut:false});
+    const src = `assets/sounds/${id}.ogg`;
+    bgmAudio = new Audio(src);
+    bgmAudio.loop = true;
+    bgmAudio.muted = false;
+    bgmAudio.volume = 0.5;
+    bgmAudio.play().catch(()=>{});
+  }
 
     function stopBgm({fadeOut=true} = {}){
       if (!bgmAudio) return;
@@ -818,9 +863,7 @@ body.is-result #resLines .small{
 
     // Mute 鈕
     $('#btnMute').addEventListener('click', ()=>{
-      bgmMuted = !bgmMuted;
-      if (bgmAudio) bgmAudio.muted = bgmMuted;
-      $('#btnMute').textContent = bgmMuted ? '音樂關閉 🔇' : '背景音樂 🔈';
+      setAudioMuted(!audioMuted);
     });
 
     // 下拉切換
@@ -830,9 +873,9 @@ body.is-result #resLines .small{
       playBgm(id);
     });
 
-    // 初始化：自動播放預設 bg_01（待使用者互動後）
+    // 初始化：自動播放預設 bg_01（待使用者互動後，且未靜音）
     document.body.addEventListener('click', ()=>{
-      if (!bgmAudio) playBgm('bg_01');
+      if (!bgmAudio && !audioMuted) playBgm('bg_01');
     }, { once: true });
 
     // ===== setup helpers =====
@@ -875,26 +918,35 @@ body.is-result #resLines .small{
     // ===== build cup list =====
     const cupList = $('#cupList');
 
-    function rebuildCupList(){
-      cupList.innerHTML = '';
-      CUPS.forEach(c=>{
-        const btn = document.createElement('button');
-        btn.className='card';
-        btn.type='button';
-        btn.setAttribute('role','option');
-        btn.setAttribute('aria-pressed', c.id===S.cup?'true':'false');
-        btn.dataset.id = c.id;
-        btn.innerHTML = `<div class="thumb">${c.render('yang')}</div><span class="label">${cupLabel(c)}</span>`;
-        btn.addEventListener('click',()=>{
-          playSfx('select'); // 🔊 點選提示音
-          S.cup = c.id; $$('.card').forEach(x=>x.setAttribute('aria-pressed','false')); btn.setAttribute('aria-pressed','true');
-          const cup = CUPS.find(x=>x.id===S.cup)||CUPS[0];
-          $('#previewL').innerHTML = cup.render('yang');
-          $('#previewR').innerHTML = cup.render('yin');
-        });
-        cupList.appendChild(btn);
+  function rebuildCupList(){
+    cupList.innerHTML = '';
+    CUPS.forEach(c=>{
+      const btn = document.createElement('button');
+      btn.className='card';
+      btn.type='button';
+      btn.setAttribute('role','option');
+      btn.setAttribute('aria-pressed', c.id===S.cup?'true':'false');
+      btn.dataset.id = c.id;
+
+      // 殼：thumb + label（thumb 先放空，再用 renderCupInto 塞入）
+      btn.innerHTML = `<div class="thumb"></div><span class="label">${cupLabel(c)}</span>`;
+      const th = btn.querySelector('.thumb');
+      renderCupInto(th, c, 'yang');
+
+      btn.addEventListener('click',()=>{
+        playSfx('select');
+        S.cup = c.id;
+        $$('.card').forEach(x=>x.setAttribute('aria-pressed','false'));
+        btn.setAttribute('aria-pressed','true');
+
+        const cup = CUPS.find(x=>x.id===S.cup)||CUPS[0];
+        renderCupInto($('#previewL'), cup, 'yang');
+        renderCupInto($('#previewR'), cup, 'yin');
       });
-    }
+      cupList.appendChild(btn);
+    });
+  }
+
     function ensureResultHolders(){
       const box = document.querySelector('#page-result .dice') || document.getElementById('page-result');
       if (!box) return;
@@ -908,35 +960,49 @@ body.is-result #resLines .small{
       }
     }
 
-    // ===== 語言切換時，預覽/結果也同步重畫（含 alt）=====
-    function syncPreviewsAndResult() {
-      const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
-
-      // 祈禱頁兩顆預覽
-      const pl = document.getElementById('previewL');
-      const pr = document.getElementById('previewR');
-      if (pl && pr && cup) {
-        pl.innerHTML = cup.render('yang');
-        pr.innerHTML = cup.render('yin');
-      }
-
-      // 若目前在結果頁，依最後一次 outcome 重畫左右桮
-      const resSection = document.getElementById('page-result');
-      if (resSection && resSection.hidden === false && lastOutcome && cup) {
-        const l = document.getElementById('resL');
-        const r = document.getElementById('resR');
-        if (l) l.innerHTML = cup.render(lastOutcome.L);
-        if (r) r.innerHTML = cup.render(lastOutcome.R);
-      }
+    // ===== 安全渲染杯子：支援 HTML 或 URL =====
+  function renderCupInto(el, cup, side){
+    if (!el || !cup) return;
+    const out = cup.render(side);
+    // 如果是 HTML 片段
+    if (typeof out === 'string' && out.trim().startsWith('<')){
+      el.innerHTML = out;
+    } else {
+      // 如果是純網址或其他型式 → 建立 <img>
+      el.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = String(out);
+      img.alt = `${cupLabel(cup)} - ${side}`;
+      img.decoding = 'async';
+      img.loading = 'eager';
+      el.appendChild(img);
     }
+  }
+
+  function syncPreviewsAndResult(){
+    const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
+
+    // 祈禱頁兩顆預覽
+    const pl = $('#previewL'), pr = $('#previewR');
+    if (pl && pr && cup) {
+      renderCupInto(pl, cup, 'yang');
+      renderCupInto(pr, cup, 'yin');
+    }
+
+    // 結果頁（若已顯示）
+    if (!$('#page-result').hidden && lastOutcome && cup) {
+      const l = $('#resL'), r = $('#resR');
+      if (l) renderCupInto(l, cup, lastOutcome.L);
+      if (r) renderCupInto(r, cup, lastOutcome.R);
+    }
+  }
 
   function renderPrayPreviews(){
     const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
-    const pl = document.getElementById('previewL');
-    const pr = document.getElementById('previewR');
+    const pl = $('#previewL'), pr = $('#previewR');
     if (pl && pr && cup) {
-      pl.innerHTML = cup.render('yang');
-      pr.innerHTML = cup.render('yin');
+      renderCupInto(pl, cup, 'yang');
+      renderCupInto(pr, cup, 'yin');
     }
   }
 
@@ -985,53 +1051,105 @@ body.is-result #resLines .small{
     }, TOSS_MS);
   }
 
-    // ===== navigation =====
-    const PAGES = ['setup','pray','result'];
-    function show(page){
-      PAGES.forEach(p=>{ const el = $('#page-'+p); if(el) el.hidden = (p!==page); });
-      $('#btnBack').hidden = (page==='setup');
-      $('#btnNext').hidden = (page!=='setup');
-      $('#btnToss').hidden = (page!=='pray');
-      $('#btnAgain').hidden = (page!=='result');
-        // ✅ 只有結果頁時啟用緊湊布局
-      document.body.classList.toggle('is-result', page === 'result');
+  // ===== navigation（Hash 路由：四步流程）=====
+  const PAGES = ['setup1','setup2','pray','result'];
 
-      if (page === 'pray') renderPrayPreviews();   // ✅ 進祈禱頁一定重畫
+  function show(page){
+    PAGES.forEach(p=>{
+      const el = document.getElementById('page-'+p);
+      if (el) el.hidden = (p!==page);
+    });
+    $('#btnBack').hidden  = (page==='setup1');
+    $('#btnNext').hidden  = (page==='result');
+    $('#btnToss').hidden  = (page!=='pray');
+    $('#btnAgain').hidden = (page!=='result');
+
+    document.body.classList.toggle('is-result', page==='result');
+    window.scrollTo({top:0, behavior:'smooth'});
+
+    if (page==='pray'){ buildPrayerText(); renderPrayPreviews(); }
+    if (page==='result'){ ensureResultHolders(); }
+  }
+
+  function currentPageFromHash(){
+    const h = (location.hash || '').replace(/^#\//,'').trim();
+    return PAGES.includes(h)?h:'setup1';
+  }
+  function goto(page){ location.hash = '#/'+(PAGES.includes(page)?page:'setup1'); }
+
+  if (!location.hash) location.hash = '#/setup1';
+  window.addEventListener('hashchange', ()=> show(currentPageFromHash()));
+  show(currentPageFromHash());
+
+  // ===== buttons（依目前頁面流向下一步）=====
+  $('#btnNext').addEventListener('click',()=>{
+    const now = currentPageFromHash();
+    if (now==='setup1'){
+      goto('setup2');
+    } else if (now==='setup2'){
+      // 準備祈禱頁內容
+      buildPrayerText();
+      const cup = CUPS.find(c=>c.id===S.cup)||CUPS[0];
+      renderCupInto($('#previewL'), cup, 'yang');
+      renderCupInto($('#previewR'), cup, 'yin');
+      goto('pray');
+      const bgmId = $('#bgmSel')?.value;
+      if (bgmId) playBgm(bgmId);
+    } else if (now==='pray'){
+      goto('result');
     }
+  });
+
+  $('#btnBack').addEventListener('click',()=>{
+    const now = currentPageFromHash();
+    if (now==='setup2') goto('setup1');
+    else if (now==='pray') goto('setup2');
+    else if (now==='result') goto('pray');
+  });
+
+  $('#btnToss').addEventListener('click', ()=>{
+    goto('result');
+    $('#previewL').innerHTML='';
+    $('#previewR').innerHTML='';
+    ensureResultHolders();
+    toss();
+  });
+
+  $('#btnAgain').addEventListener('click', ()=>{
+    toss();
+    goto('result');
+  });
 
     // ===== toss logic =====
-    function toss(){
-      console.log('[toss] S.cup =', S.cup, 'found =', !!(CUPS.find(c=>c.id===S.cup)));
-      playSfx('toss');
-      const sides = ['yin','yang'];
-      const L = sides[Math.random()<0.5?0:1];
-      const R = sides[Math.random()<0.5?0:1];
-      let type;
-      if((L==='yin' && R==='yang') || (L==='yang' && R==='yin')) type='ok';
-      else if(L==='yang' && R==='yang') type='bad';
-      else type='meh';
-      lastOutcome = {L,R,type};
+  function toss(){
+    playSfx('toss');
+    const sides = ['yin','yang'];
+    const L = sides[Math.random()<0.5?0:1];
+    const R = sides[Math.random()<0.5?0:1];
+    let type;
+    if((L==='yin' && R==='yang') || (L==='yang' && R==='yin')) type='ok';
+    else if(L==='yang' && R==='yang') type='bad';
+    else type='meh';
+    lastOutcome = {L,R,type};
 
-      const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
-      const l = $('#resL'), r = $('#resR');
-      // ✅ 先把結果圖畫進去
-      if (l) l.innerHTML = cup.render(lastOutcome.L);
-      if (r) r.innerHTML = cup.render(lastOutcome.R);
-      // ✅ 接著跑一套動畫（彈 → 光暈＋左右擺 → 輕晃）
-      if (l) applyTossAndShake(l, type);
-      if (r) applyTossAndShake(r, type);
-      // ✅ 徽章文字 / 顏色
-      const t = I18N[S.lang];
-      const badge = $('#badge');
-      if (badge) {
-        badge.className = 'badge ' + (lastOutcome.type==='ok' ? 'ok' : lastOutcome.type==='bad' ? 'bad' : 'meh');
-        badge.textContent = (lastOutcome.type==='ok') ? t.ok : (lastOutcome.type==='bad') ? t.bad : t.meh;
-      }
-      // ✅ 結果敘述
-      buildResultLines(lastOutcome);
-      // ✅ 投擲聲後補結果聲
-      setTimeout(()=> playSfx(type), 120);
+    const cup = CUPS.find(c => c.id === S.cup) || CUPS[0];
+    const l = $('#resL'), r = $('#resR');
+    if (l) renderCupInto(l, cup, lastOutcome.L);
+    if (r) renderCupInto(r, cup, lastOutcome.R);
+
+    if (l) applyTossAndShake(l, type);
+    if (r) applyTossAndShake(r, type);
+
+    const t = I18N[S.lang];
+    const badge = $('#badge');
+    if (badge) {
+      badge.className = 'badge ' + (type==='ok'?'ok': type==='bad'?'bad':'meh');
+      badge.textContent = type==='ok'? t.ok : type==='bad'? t.bad : t.meh;
     }
+
+    buildResultLines(lastOutcome);
+    setTimeout(()=> playSfx(type), 120);
+  }
 
     // ===== result lines =====
     function buildResultLines(outcome){
@@ -1074,35 +1192,6 @@ body.is-result #resLines .small{
     function historyPush(type){ hist.push(type); if(hist.length>9) hist.shift(); }
     function checkStreak(seq){ if(hist.length < seq.length) return false; const n = seq.length; for(let i=0;i<=hist.length-n;i++){ if(seq.every((v,k)=>hist[i+k]===v)) return true; } return false; }
     function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
-
-    // ===== buttons =====
-    $('#btnNext').addEventListener('click',()=>{
-      buildPrayerText();
-      const cup = CUPS.find(c=>c.id===S.cup)||CUPS[0];
-      $('#previewL').innerHTML = cup.render('yang');
-      $('#previewR').innerHTML = cup.render('yin');
-      show('pray');
-
-     // ✅ 進祈禱頁後依選項播放 BGM
-     const bgmId = document.querySelector('input[name="bgm"]:checked')?.value;
-     if (bgmId) playBgm(bgmId, {fadeIn:true});
-   });
-    $('#btnBack').addEventListener('click',()=>{ show('setup'); });
-    $('#btnToss').addEventListener('click', ()=>{
-      // 清掉祈禱頁的浮動預覽，避免殘影/誤會
-      $('#previewL').innerHTML = '';
-      $('#previewR').innerHTML = '';
-      show('result');          // 先切到結果頁，避免 hidden/折疊導致尺寸 0
-      ensureResultHolders();   // ✅ 確保 resL/resR 存在
-      toss();                  // 再做渲染與動畫
-      // 捲到最上面，確保只看得到結果頁
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-    $('#btnAgain').addEventListener('click', ()=>{
-      toss();                 // 直接重擲
-      show('result');         // 保持在結果頁
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
 
     // ===== 可摺疊 fieldset（自動套用到設定頁） =====
   function makeFieldsetFoldable(fs, {open=false, storageKey} = {}){
@@ -1150,7 +1239,8 @@ body.is-result #resLines .small{
   function setupAccordion(){
     // 你現在的設定頁有三塊：求問對象 / 基本資料 / 桮樣式
     // 依實際 fieldset 順序自動套用：第 1 塊展開，其餘收合
-    const sets = Array.from(document.querySelectorAll('#page-setup fieldset'));
+    // 原：'#page-setup fieldset'
+    const sets = Array.from(document.querySelectorAll('#page-setup1 fieldset'));
     sets.forEach((fs, idx)=>{
       makeFieldsetFoldable(fs, { open: idx === 0, storageKey: `poah:fold:${idx}` });
     });
