@@ -7,532 +7,355 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icons/icon-192.png">
   <meta name="theme-color" content="#0b0b0f">
-<style>
-/* ===== 基本變數與全域樣式 ===== */
-:root{
-  --bg:#0b0b0f; --fg:#f2f4f8; --muted:#b9bcc6; --acc:#ffd452; --card:#141822; --glass:rgba(255,255,255,.06);
-  --ok:#4caf50; --bad:#ef5350; --meh:#ffb020;
-  --result-lift:64px; /* 結果頁上移量（可調） */
-}
+  <style>
+  /* ========================
+   *  Base variables & layout
+   * ======================== */
+  :root{
+    --bg:#0b0b0f; --fg:#f2f4f8; --muted:#b9bcc6; --acc:#ffd452;
+    --card:#141822; --glass:rgba(255,255,255,.06);
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
-body{
-  margin:0;
-  color:var(--fg);
-  background:var(--bg);
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC","PingFang TC","Heiti TC",sans-serif;
-}
-main{ max-width:680px; margin:0 auto; padding:16px 16px 72px; }
+    --ok:#4caf50; --bad:#ef5350; --meh:#ffb020;
 
-header{
-  position:sticky; top:0; z-index:10;
-  background:linear-gradient(180deg,#0b0b0f 70%,#0b0b0f00);
-  padding:12px 16px; display:flex; gap:8px; align-items:center;
-}
-h1{ font-size:22px; margin:0 8px 0 0; }
-.lang{ margin-left:auto; }
-
-/* 表單元件（玻璃感半透明） */
-select,input,textarea,button{
-  width:100%; padding:9px 10px; font-size:14px; border-radius:10px;
-  color:var(--fg);
-  background:rgba(15,19,32,.55);
-  border:1px solid rgba(32,36,55,.6);
-  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
-}
-textarea{ min-height:70px; resize:vertical }
-
-/* fieldset / 卡片 / 祈禱文：同步半透明 */
-fieldset,.card,.prayer{
-  background:rgba(15,20,34,.55);
-  border:1px solid rgba(31,36,53,.7);
-  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
-}
-legend{ padding:0 8px; color:#d6daea; }
-.row{ display:grid; grid-template-columns:1fr; gap:12px; }
-
-/* ===== 桮樣式卡片（毛玻璃半透明風格） ===== */
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.card {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 10px;
-  cursor: pointer;
-  outline: none;
-  position: relative;
-  -webkit-backdrop-filter: blur(6px) saturate(130%);
-  backdrop-filter: blur(6px) saturate(130%);
-  transition: all 0.25s ease;
-}
-
-/* 卡片區：更透明、讓底圖透出來 */
-.cards .card {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 10px;
-  cursor: pointer;
-  outline: none;
-  position: relative;
-  -webkit-backdrop-filter: blur(5px) saturate(130%);
-  backdrop-filter: blur(5px) saturate(130%);
-  transition: all 0.25s ease;
-}
-.cards .card[aria-pressed="true"],
-.cards .card:focus {
-  box-shadow: 0 0 0 2px var(--acc) inset;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-}
-
-.card[aria-pressed="true"], .card:focus{
-  box-shadow:0 0 0 2px var(--acc) inset;
-  background:rgba(255,255,255,.15);
-}
-.thumb{
-  background:rgba(255,255,255,.12);
-  border-radius:12px;
-  -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
-}
-/* 卡片用的 label 與 桮底下名稱分流，避免互搶 */
-.cards .label{
-  display:block; text-align:center; margin-top:6px; font-size:13px; color:#f2f4f8;
-  text-shadow:0 1px 2px rgba(0,0,0,.4);
-}
-
-/* 工具列 */
-.toolbar{
-  position:fixed; left:0; right:0; bottom:0;
-  background:linear-gradient(180deg,transparent,rgba(0,0,0,.25)),#0b0b0f;
-  padding:12px 16px; display:flex; gap:12px; z-index:20;
-}
-.btn{ background:#1a2140; border:1px solid #232a52; color:#fff; padding:12px 14px; border-radius:14px; font-size:16px; }
-.btn.primary{ background:linear-gradient(180deg,#2a3568,#1f2852); border-color:#3b4aa8; }
-.btn.ghost{ background:#0f1320; }
-
-.center{ display:grid; place-items:center; }
-.prayer{ line-height:1.7; color:#dfe3f3; border-style:dashed; border-radius:16px; padding:14px; }
-.result{ display:grid; gap:12px; }
-
-/* 桮顯示區 */
-.dice{ display:flex; justify-content:center; gap:28px; margin:8px 0 16px; }
-
-/* ===== 桮尺寸：依螢幕自適應，並允許跳出範圍 ===== */
-.cup{
-  position: relative;           /* 讓容器可當位移參考點 */
-  overflow: visible;            /* ✨ 彈跳時不被剪裁 */
-  width: clamp(96px, 30vw, 140px);
-  height: clamp(96px, 30vw, 140px);
-  display: grid;                /* 置中內部桮圖 */
-  place-items: center;
-}
-/* 限制桮內圖形大小，避免被撐滿容器 */
-.cup img,
-.cup svg {
-  max-width: 85%;
-  max-height: 85%;
-  width: auto;
-  height: auto;
-  object-fit: contain; /* 保持比例不裁切 */
-}
-@media (max-width:480px), (max-height:740px){
-  .cup{
-    width: clamp(88px, 28vh, 132px);
-    height: clamp(88px, 28vh, 132px);
+    /* === Result layout (single source of truth) === */
+    --result-lift:120px;     /* 結果區整塊往上貼近祈禱文的距離 */
+    --res-h2-top:.8em;       /* 「指示結果」上方距離（大約 2 行內） */
+    --res-h2-bottom:1.2em;   /* 「指示結果」與杯圖距離（≈ 2 行） */
+    --res-dice-bottom:1.6em; /* 杯圖與下方文字距離 */
   }
-}
 
-/* 漂浮與投擲動畫 */
-.float{ animation:float 2s ease-in-out infinite; }
-@keyframes float{ 0%{transform:translateY(0)} 50%{transform:translateY(-6px)} 100%{transform:translateY(0)} }
-.toss{ animation:toss .9s cubic-bezier(.2,.8,.2,1); }
-@keyframes toss{
-  0%{ transform:translateY(-20vh) rotate(-40deg); opacity:.7 }
-  60%{ transform:translateY(0) rotate(0) }
-  80%{ transform:translateY(-5px) }
-  100%{ transform:translateY(0); opacity:1 }
-}
-/* ===== 加強版彈地效果（彈高一點） ===== */
-.bounce {
-  animation: bounceStrong 0.8s cubic-bezier(.25, .65, .35, 1.3); /* 較長、彈性強 */
-}
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; color:var(--fg); background:var(--bg);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC","PingFang TC","Heiti TC",sans-serif;
+  }
+  main{ max-width:680px; margin:0 auto; padding:16px 16px 72px; }
 
-@keyframes bounceStrong {
-  0%   { transform: translateY(0); }
-  20%  { transform: translateY(20px); }   /* 下墜 */
-  40%  { transform: translateY(-24px); }  /* 高彈起 */
-  55%  { transform: translateY(12px); }   /* 回落 */
-  70%  { transform: translateY(-10px); }  /* 小反彈 */
-  85%  { transform: translateY(4px); }
-  100% { transform: translateY(0); }
-}
+  header{
+    position:sticky; top:0; z-index:10;
+    background:linear-gradient(180deg,#0b0b0f 70%,#0b0b0f00);
+    padding:12px 16px; display:flex; gap:8px; align-items:center;
+  }
+  h1{ font-size:22px; margin:0 8px 0 0; }
+  .lang{ margin-left:auto; }
 
-/* 左右擺動幾下再停（自然落地感） */
-.sway {
-  animation: swayFew 1.1s ease-in-out forwards;
-}
-@keyframes swayFew {
-  0%   { transform: rotate(0deg); }
-  10%  { transform: rotate(-10deg); }
-  25%  { transform: rotate(10deg); }
-  40%  { transform: rotate(-8deg); }
-  60%  { transform: rotate(8deg); }
-  80%  { transform: rotate(-4deg); }
-  100% { transform: rotate(0deg); }
-}
-
-/* 弱動作使用者：關閉動效 */
-@media (prefers-reduced-motion: reduce){
-  .sway, .shake, .toss{ animation: none !important; }
-}
-
-/* 結果徽章 */
-.badge{
-  display:inline-block;
-  padding:.25rem .5rem;
-  border-radius:999px;
-  font-size:16px;
-  border:1px solid #2a3152;
-  background:#101424;
-  color:#ccd2ea;
-  margin-top: 2.0em;   /* ✅ 讓徽章往下多一行距離 */
-}
-.ok{ color:#e8ffe8; border-color:#2f6b3a; background:rgba(76,175,80,.5); }
-.bad{ color:#ffecec; border-color:#7b3434; background:rgba(239,83,80,.5); }
-.meh{ color:#fff2e0; border-color:#7b5a24; background:rgba(255,176,32,.5); }
-
-.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-.small{ font-size:12px; color:#aeb6d8; }
-
-/* ===== 結果頁間距（單一定義，避免重複） ===== */
-#page-result h2{ margin:0 0 6px; }
-#page-result .dice{ gap:18px; margin:4px 0 8px; }
-#page-result .result{ gap:8px; }
-
-/* 結果區：讓桮與文字保持約兩行距離，加上柔和底色 */
-#resLines{
-  background:rgba(0,0,0,.4);
-  border-radius:14px;
-  padding:10px 12px;
-}
-/* 關鍵詞保持亮一點（保留單一版本） */
-#resLines b{ font-weight:600; color:#fff9cc; }
-
-/* ===== 金光：根據結果改顏色，兩次擴散 ===== */
-.glow{ position:relative; z-index:1; }
-.glow::after{
-  content:""; position:absolute; inset:-40px; border-radius:50%;
-  background:radial-gradient(circle, rgba(255,223,100,.55) 0%, rgba(255,223,100,.35) 25%, rgba(255,223,100,.15) 50%, rgba(255,223,100,0) 80%);
-  filter:blur(12px); opacity:0; animation:glowTwice 1.4s ease-in-out;
-}
-@keyframes glowTwice{
-  0%,100%{ opacity:0; transform:scale(1) }
-  20%{ opacity:.9; transform:scale(1.1) }
-  35%{ opacity:0; transform:scale(1) }
-  55%{ opacity:.8; transform:scale(1.15) }
-  70%{ opacity:0; transform:scale(1) }
-}
-.glow[data-outcome="bad"]::after{
-  background:radial-gradient(circle, rgba(180,180,180,.5) 0%, rgba(160,160,160,.3) 25%, rgba(130,130,130,.1) 50%, rgba(0,0,0,0) 80%);
-}
-.glow[data-outcome="meh"]::after{
-  background:radial-gradient(circle, rgba(255,170,50,.55) 0%, rgba(255,140,30,.35) 25%, rgba(255,110,0,.15) 50%, rgba(255,100,0,0) 80%);
-}
-
-/* ===== 顯示結果時，把整塊往上貼近上方文字（用 --result-lift 控制） ===== */
-body.is-result main{ padding-top:4px; }
-body.is-result #page-result{ margin-top:calc(-1 * var(--result-lift)); }
-body.is-result #page-result h2{ margin:0 0 4px; }
-body.is-result #page-result .dice{ gap:14px; margin:0 0 6px; }
-body.is-result #page-result .result{ gap:6px; }
-
-/* 螢幕較寬時，可再多貼一點 */
-@media (min-width:480px){ :root{ --result-lift:80px; } }
-@media (min-width:768px){ :root{ --result-lift:96px; } }
-
-/* ===== 手機 App 版面精簡（字級/間距壓低） ===== */
-@media (max-width:480px),(max-height:740px){
-  body,main{ font-size:15px; line-height:1.45; }
-  main{ padding:8px 12px 72px; max-width:560px; }
-
-  /* 修正這行原本的錯字（多了一個 18px;） */
-  header{ padding:8px 10px; }
-  h1{ font-size:18px; margin-right:6px; }
-
-  /* 表單微調 */
+  /* =========
+   *  Controls
+   * ========= */
   select,input,textarea,button{
+    width:100%; padding:9px 10px; font-size:16px; border-radius:10px;
+    color:var(--fg);
     background:rgba(15,19,32,.55);
     border:1px solid rgba(32,36,55,.6);
     -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
   }
-  textarea{ min-height:70px; }
+  textarea{ min-height:70px; resize:vertical }
 
-  fieldset{ padding:10px; border-radius:12px; }
-  legend{ font-size:15px; margin-bottom:4px; }
-  label{ font-size:14px; }
-
-  .row{ gap:10px; }
-  .cards{ gap:8px; }
-  .card{ padding:8px; border-radius:10px; }
-  .thumb{ border-radius:8px; }
-  .cards .label{ font-size:11.5px; margin-top:3px; }
-
-  .toolbar{ padding:8px 10px; gap:6px; }
-  .btn{ padding:8px 10px; font-size:14px; border-radius:10px; }
-
-  /* 祈禱頁 */
-  #page-pray h2{ margin:0 0 4px; font-size:16px; font-weight:600; opacity:.9; }
-  #page-pray .prayer{
-    font-size:14px; padding:10px; margin:0 0 6px; line-height:1.5;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  /* Glass blocks */
+  fieldset,.card,.prayer{
+    background:rgba(15,20,34,.55);
+    border:1px solid rgba(31,36,53,.7);
+    -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
   }
-  #page-pray .dice{ gap:14px; margin:4px 0 8px; }
+  legend{ padding:0 8px; color:#d6daea; }
+  .row{ display:grid; grid-template-columns:1fr; gap:12px; }
 
-  /* 結果頁更緊湊 */
-  #page-result h2{ margin:0 0 4px; font-size:16px; }
-  #page-result .dice{ gap:14px; margin:2px 0 6px; }
-  #page-result .result{ gap:6px; }
-
-  /* 這行把 badge 壓太小了，請刪掉或改大一點 */
-  /* .badge{ font-size:11px; padding:.2rem .5rem; } */
-
-  .small{ font-size:11.5px; }
-  body.is-result main{ padding-top:2px; }
-  body.is-result #page-result{ margin-top:calc(-1 * var(--result-lift,72px)); }
-
-  /* 祈禱頁 BGM 選擇區緊湊化 */
-  #bgmField{ padding:8px 10px; }
-  #bgmField legend{ font-size:14px; color:#cfd3e6; }
-  #bgmField .row{ gap:6px; }
-  #bgmField .row label{ font-size:14px; }
-}
-
-/* ===== BGM 下拉選單（header 右側） ===== */
-.bgm select{
-  padding:6px 10px; font-size:14px; border-radius:10px; margin-left:8px;
-  background:#0f1320; color:#f2f4f8; border:1px solid #202437;
-}
-@media (max-width:480px){
-  .bgm select{ font-size:13px; padding:6px 8px; }
-}
-
-/* ===== 全站背景圖：使用原圖、不降亮度 ===== */
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background: url("assets/images/bg.webp") center/cover no-repeat fixed;
-  opacity: 1;         /* 原圖亮度 */
-  filter: none;       /* 取消飽和/亮度調整 */
-  z-index:-1;
-}
-
-/* ===== 可摺疊 fieldset（Accordion） ===== */
-fieldset.fold{ overflow:hidden; padding:0; }
-fieldset.fold > legend{
-  display:flex; align-items:center; gap:8px;
-  padding:12px; margin:0; cursor:pointer; user-select:none;
-  border-bottom:1px solid #1f2435;
-}
-fieldset.fold > legend .legend-text{ flex:1; color:#d6daea; font-weight:600; }
-fieldset.fold > legend .caret{
-  width:10px; height:10px; transform:rotate(0deg);
-  border-right:2px solid #cfd3e6; border-bottom:2px solid #cfd3e6;
-  margin-left:6px; transition:transform .18s ease;
-}
-fieldset.fold[aria-expanded="true"] > legend .caret{ transform:rotate(45deg); }
-fieldset.fold[aria-expanded="false"] > legend .caret{ transform:rotate(-135deg); }
-
-/* 求問對象折疊區：銀白霧光半透明（更透亮） */
-.fold-content {
-  padding: 10px 12px 12px;
-  display: grid;
-  gap: 12px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height .22s ease;
-
-  background: rgba(255, 255, 255, 0.04); /* 🌫️ 再透明一級（原0.18→0.04） */
-  -webkit-backdrop-filter: blur(9px) saturate(150%);
-  backdrop-filter: blur(9px) saturate(150%);
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); /* 淡淡陰影增加層次 */
-}
-/* ===== 折疊展開內容：子標題字級放大 ===== */
-.fold-content label,
-.fold-content span[data-i],
-.fold-content input,
-.fold-content textarea {
-  font-size: 17px;       /* 🔸原本大約 14px～15px，這裡放大一階 */
-  line-height: 1.6;
-}
-
-/* 若想讓主要的提示文字（例如 "輸入神明稱號"）再亮一點 */
-.fold-content .small {
-  font-size: 14px;
-  color: #e6e9f5;        /* 比原先灰色更明亮 */
-}
-
-fieldset.fold[aria-expanded="true"] > .fold-content {
-  max-height: 800px;
-}
-
-@media (max-width:480px),(max-height:740px){
-  fieldset.fold > legend{ padding:10px; }
-  .fold-content{ padding:8px 10px 10px; gap:10px; }
-}
-
-/* ===== 桮下方名稱（更亮、更大、更透） ===== */
-.cup .label {
-  font-size: 28px;                  /* 🔸字體放大（原24→28） */
-  font-weight: 700;                 /* 🔸稍微加粗，層次更明顯 */
-  color: #f8faff;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.45);
-  background: rgba(0, 0, 0, 0.2);  /* 🔸透明度減少（原0.5→0.2） */
-  padding: 8px 14px;                /* 🔸多一點留白，比例更協調 */
-  border-radius: 12px;
-  display: inline-block;
-  margin-top: 1.4em;
-  margin-bottom: 2.6em;
-  letter-spacing: 0.5px;            /* 🔸微開字距，視覺更穩定 */
-}
-
-/* 手機版微調 */
-@media (max-width:480px){
-  .cup .label {
-    font-size: 20px;                /* 🔸原16→20，仍可讀 */
-    background: rgba(0, 0, 0, 0.2); /* 🔸透明度同樣更透 */
-    padding: 5px 9px;
-    margin-top: 1.2em;
-    margin-bottom: 2em;
+  /* =====
+   * Cards
+   * ===== */
+  .cards{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
   }
-}
+  .card{
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.05);
+    border-radius:16px; padding:10px; cursor:pointer; outline:none;
+    -webkit-backdrop-filter:blur(5px) saturate(130%); backdrop-filter:blur(5px) saturate(130%);
+    transition:all .25s ease;
+  }
+  .card[aria-pressed="true"], .card:focus{
+    box-shadow:0 0 0 2px var(--acc) inset; background:rgba(255,255,255,.12);
+  }
+  .thumb{ background:rgba(255,255,255,.12); border-radius:12px; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
+  .cards .label{ display:block; text-align:center; margin-top:6px; font-size:14px; color:#f2f4f8; text-shadow:0 1px 2px rgba(0,0,0,.4); }
 
-/* 隱藏左下方常駐說明（如桮結果重複顯示那三行） */
-#resLines > div:not(.small){ display:none; }
+  /* =======
+   * Toolbar
+   * ======= */
+  .toolbar{
+    position:fixed; left:0; right:0; bottom:0;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.25)),#0b0b0f;
+    padding:12px 16px; display:flex; gap:12px; z-index:20;
+  }
+  .btn{ background:#1a2140; border:1px solid #232a52; color:#fff; padding:12px 14px; border-radius:14px; font-size:16px; }
+  .btn.primary{ background:linear-gradient(180deg,#2a3568,#1f2852); border-color:#3b4aa8; }
+  .btn.ghost{ background:#0f1320; }
 
-/* 只在結果頁固定彩蛋條（預設透明，交由 .show 淡入） */
-body.is-result #resLines .small{
-  position:fixed; left:50%; transform:translateX(-50%);
-  bottom:calc(72px + 12px);
-  width:min(92vw,680px);
-  z-index:15;
-  text-align:left; font-size:14px; color:#f6f8ff;
-  background:rgba(0,0,0,.55); border-radius:12px; padding:8px 12px;
-  box-shadow:0 6px 24px rgba(0,0,0,.25);
-}
-@media (max-width:480px){
+  /* =========
+   * Content UI
+   * ========= */
+  .center{ display:grid; place-items:center; }
+  .prayer{ line-height:1.7; color:#dfe3f3; border-style:dashed; border-radius:16px; padding:14px; }
+  .result{ display:grid; gap:12px; }
+
+  /* ========
+   * Dice/Cup
+   * ======== */
+  .dice{ display:flex; justify-content:center; gap:28px; margin:8px 0 16px; }
+  .cup{
+    position:relative; overflow:visible;
+    width:clamp(96px,30vw,140px); height:clamp(96px,30vw,140px);
+    display:grid; place-items:center;
+  }
+  .cup img,.cup svg{
+    max-width:85%; max-height:85%; width:auto; height:auto; object-fit:contain;
+  }
+
+  /* Animations */
+  .float{ animation:float 2s ease-in-out infinite; }
+  @keyframes float{ 0%{transform:translateY(0)} 50%{transform:translateY(-6px)} 100%{transform:translateY(0)} }
+  .toss{ animation:toss .9s cubic-bezier(.2,.8,.2,1); }
+  @keyframes toss{ 0%{transform:translateY(-20vh) rotate(-40deg); opacity:.7} 60%{transform:translateY(0) rotate(0)} 80%{transform:translateY(-5px)} 100%{transform:translateY(0); opacity:1} }
+  .bounce{ animation:bounceStrong .8s cubic-bezier(.25,.65,.35,1.3); }
+  @keyframes bounceStrong{ 0%{transform:translateY(0)} 20%{transform:translateY(20px)} 40%{transform:translateY(-24px)} 55%{transform:translateY(12px)} 70%{transform:translateY(-10px)} 85%{transform:translateY(4px)} 100%{transform:translateY(0)} }
+  .sway{ animation:swayFew 1.1s ease-in-out forwards; }
+  @keyframes swayFew{ 0%{rotate:0} 10%{rotate:-10deg} 25%{rotate:10deg} 40%{rotate:-8deg} 60%{rotate:8deg} 80%{rotate:-4deg} 100%{rotate:0} }
+  @media (prefers-reduced-motion:reduce){ .sway,.shake,.toss{ animation:none!important; } }
+
+  /* =====
+   * Badge
+   * ===== */
+  .badge{
+    display:inline-block; padding:.25rem .5rem; border-radius:999px; font-size:16px;
+    border:1px solid #2a3152; background:#101424; color:#ccd2ea; margin-top:2em;
+  }
+  .ok{ color:#e8ffe8; border-color:#2f6b3a; background:rgba(76,175,80,.5); }
+  .bad{ color:#ffecec; border-color:#7b3434; background:rgba(239,83,80,.5); }
+  .meh{ color:#fff2e0; border-color:#7b5a24; background:rgba(255,176,32,.5); }
+
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  .small{ font-size:12px; color:#aeb6d8; }
+
+  /* =======================
+   * Result page (unified!)
+   * ======================= */
+  #page-result h2{ margin: var(--res-h2-top) 0 var(--res-h2-bottom) !important; }
+  #page-result .dice{ margin: 0 0 var(--res-dice-bottom) !important; }
+  #resLines{ background:rgba(0,0,0,.4); border-radius:14px; padding:10px 12px; }
+  #resLines b{ font-weight:600; color:#fff9cc; }
+
+  /* 發光：依結果變色 */
+  .glow{ position:relative; z-index:1; }
+  .glow::after{
+    content:""; position:absolute; inset:-40px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,223,100,.55) 0%, rgba(255,223,100,.35) 25%, rgba(255,223,100,.15) 50%, rgba(255,223,100,0) 80%);
+    filter:blur(12px); opacity:0; animation:glowTwice 1.4s ease-in-out;
+  }
+  @keyframes glowTwice{ 0%,100%{opacity:0; transform:scale(1)} 20%{opacity:.9; transform:scale(1.1)} 35%{opacity:0} 55%{opacity:.8; transform:scale(1.15)} 70%{opacity:0} }
+  .glow[data-outcome="bad"]::after{ background:radial-gradient(circle, rgba(180,180,180,.5) 0%, rgba(160,160,160,.3) 25%, rgba(130,130,130,.1) 50%, rgba(0,0,0,0) 80%); }
+  .glow[data-outcome="meh"]::after{ background:radial-gradient(circle, rgba(255,170,50,.55) 0%, rgba(255,140,30,.35) 25%, rgba(255,110,0,.15) 50%, rgba(255,100,0,0) 80%); }
+
+  /* 顯示結果時把整塊往上貼近祈禱文 */
+  body.is-result #page-result{ margin-top:calc(-1 * var(--result-lift)); }
+  body.is-result main{ padding-top:4px; }
+
+  /* 只保留彩蛋條，其他常駐說明隱藏 */
+  #resLines > div:not(.small){ display:none; }
   body.is-result #resLines .small{
-    bottom:calc(64px + 10px); width:94vw; font-size:13.5px;
+    position:fixed; left:50%; transform:translateX(-50%);
+    bottom:calc(72px + 12px);
+    width:min(92vw,680px); z-index:15;
+    text-align:left; font-size:14px; color:#f6f8ff;
+    background:rgba(0,0,0,.55); border-radius:12px; padding:8px 12px;
+    box-shadow:0 6px 24px rgba(0,0,0,.25);
   }
-}
-/* 淡入控制：預設 0，.show → 1 */
-#resLines .small{ opacity:0; transition:opacity .2s ease; }
-#resLines .small.show{ opacity:1; }
-  /* 結果頁 badge 字級（最終版本，請放在檔案最後） */
-#page-result .badge{
-  font-size: 18px;
-  padding: .35rem .75rem;
-  font-weight: 700;
-  letter-spacing: .4px;
-  line-height: 1.1;
-}
-@media (max-width:480px){
-  #page-result .badge{
-    font-size: 16px;           /* 手機適中，不會太大卡版面 */
-    padding: .3rem .6rem;
+  #resLines .small{ opacity:0; transition:opacity .2s ease; }
+  #resLines .small.show{ opacity:1; }
+
+  /* 讓結果圖容器穩定置中與尺寸 */
+  #page-result .cup{ display:grid; place-items:center; width:clamp(96px,30vw,140px); height:clamp(96px,30vw,140px); }
+  #page-result .cup img,#page-result .cup svg{ max-width:90%; max-height:90%; width:auto; height:auto; display:block; object-fit:contain; }
+
+  /* ========
+   * Accordeon
+   * ======== */
+  fieldset.fold{ overflow:hidden; padding:0; }
+  fieldset.fold > legend{
+    display:flex; align-items:center; gap:8px;
+    padding:12px; margin:0; cursor:pointer; user-select:none;
+    border-bottom:1px solid #1f2435;
   }
-}
-/* 結果圖保底尺寸與置中 */
-#page-result .cup {
-  display: grid;
-  place-items: center;
-  width: clamp(96px, 30vw, 140px);
-  height: clamp(96px, 30vw, 140px);
-}
-#page-result .cup img,
-#page-result .cup svg {
-  max-width: 90%;
-  max-height: 90%;
-  width: auto;
-  height: auto;
-  display: block;
-  object-fit: contain;
-}
-/* ===== 設定頁：輸入項目標題（置中＋放大＋黃色） ===== */
-/* 1) fieldset 的標題（求問對象、選桮） */
-#setupForm > fieldset > legend,
-#setupForm > fieldset > legend .legend-text {
-  color: var(--acc);          /* 黃色（沿用你的重點色） */
-  font-size: 20px;
-  font-weight: 800;
-  text-align: center;
-  letter-spacing: .3px;
-}
+  fieldset.fold > legend .legend-text{ flex:1; color:#d6daea; font-weight:600; }
+  fieldset.fold > legend .caret{ width:10px; height:10px; transform:rotate(0); border-right:2px solid #cfd3e6; border-bottom:2px solid #cfd3e6; margin-left:6px; transition:transform .18s ease; }
+  fieldset.fold[aria-expanded="true"] > legend .caret{ transform:rotate(45deg); }
+  fieldset.fold[aria-expanded="false"] > legend .caret{ transform:rotate(-135deg); }
+  .fold-content{
+    padding:10px 12px 12px; display:grid; gap:12px; max-height:0; overflow:hidden; transition:max-height .22s ease;
+    background:rgba(255,255,255,.04); -webkit-backdrop-filter:blur(9px) saturate(150%); backdrop-filter:blur(9px) saturate(150%);
+    border-top:1px solid rgba(255,255,255,.25); border-bottom:1px solid rgba(255,255,255,.12); box-shadow:0 2px 12px rgba(0,0,0,.1);
+  }
+  .fold-content label,.fold-content span[data-i],.fold-content input,.fold-content textarea{ font-size:17px; line-height:1.6; }
+  .fold-content .small{ font-size:14px; color:#e6e9f5; }
+  fieldset.fold[aria-expanded="true"] > .fold-content{ max-height:800px; }
 
-/* 折疊（accordion）啟用後，legend 是 flex：把內容置中 */
-#setupForm > fieldset.fold > legend {
-  justify-content: center;    /* 讓整個 legend 置中，caret 會在右側 */
-}
+  /* ======
+   * Header
+   * ====== */
+  .bgm select{
+    padding:6px 10px; font-size:14px; border-radius:10px; margin-left:8px;
+    background:#0f1320; color:#f2f4f8; border:1px solid #202437;
+  }
 
-/* 2) 單獨那兩個輸入區塊的標題（求問者姓名／暱稱、求問事項）
-      只選擇 #setupForm 直屬的 label → 不會動到 fieldset 內的單選項目 */
-#setupForm > label > span[data-i] {
-  display: block;
-  color: var(--acc);          /* 黃色 */
-  font-size: 18px;
-  font-weight: 700;
-  text-align: center;
-  margin: 6px 0 8px;
-}
+  /* =========
+   * Background
+   * ========= */
+  body::before{
+    content:""; position:fixed; inset:0;
+    background:url("assets/images/bg.webp") center/cover no-repeat fixed;
+    opacity:1; filter:none; z-index:-1;
+  }
 
-/* 手機微調：字級略收、仍清楚 */
-@media (max-width: 480px) {
+  /* =================
+   * Mobile adjustments
+   * ================= */
+  @media (max-width:480px),(max-height:740px){
+    body,main{ font-size:15px; line-height:1.45; }
+    main{ padding:8px 12px 72px; max-width:560px; }
+
+    header{ padding:8px 10px; }
+    h1{ font-size:18px; margin-right:6px; }
+
+    fieldset{ padding:10px; border-radius:12px; }
+    legend{ font-size:15px; margin-bottom:4px; }
+    label{ font-size:14px; }
+
+    .row{ gap:10px; }
+    .cards{ gap:8px; }
+    .card{ padding:8px; border-radius:10px; }
+    .thumb{ border-radius:8px; }
+    .cards .label{ font-size:11.5px; margin-top:3px; }
+
+    .toolbar{ padding:8px 10px; gap:6px; }
+    .btn{ padding:8px 10px; font-size:14px; border-radius:10px; }
+
+    /* Pray page brief */
+    #page-pray h2{ margin:0 0 4px; font-size:16px; font-weight:600; opacity:.9; }
+    #page-pray .prayer{
+      font-size:14px; padding:10px; margin:0 0 6px; line-height:1.5;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    #page-pray .dice{ gap:14px; margin:4px 0 8px; }
+
+    /* 用「調變數」來控制結果頁間距（規則不重寫） */
+    :root{
+      --result-lift:132px;
+      --res-h2-top:.7em;
+      --res-h2-bottom:1.1em;
+      --res-dice-bottom:1.4em;
+    }
+  }
+    /* ===== Step 1: 設定頁輸入標題強化（黃色 + 放大） ===== */
+
+  /* fieldset 標題（例如 求問對象、選擇桮款式） */
   #setupForm > fieldset > legend,
   #setupForm > fieldset > legend .legend-text {
-    font-size: 18px;
+    color: var(--acc);          /* 使用你的主題黃色 */
+    font-size: 22px;            /* 放大字體 */
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
   }
-  #setupForm > label > span[data-i] {
-    font-size: 16px;
-    margin: 4px 0 6px;
-  }
-}
-  /* ===== 結果頁：讓桮圖與徽章之間保留足夠間距 ===== */
-#page-result .dice {
-  margin-bottom: 1.8em;   /* ✅ 原本是 0 或太小，增加底部距離 */
-}
 
-#page-result .result {
-  margin-top: 0.5em;      /* 徽章與文字稍往下推 */
-}
-@media (max-width:480px){
-  #page-result .dice {
-    margin-bottom: 1.4em;
+  /* 單獨輸入項目標題（例如 求問者姓名／暱稱、求問事項） */
+  #setupForm > label > span[data-i] {
+    display: block;
+    color: var(--acc);
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin: 8px 0 10px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
   }
-}
-#page-result .badge {
-  position: relative;
-  z-index: 5;   /* ✅ 確保永遠蓋在桮上方，而非被遮住 */
-}
-  /* 結果頁：強制啟用左右晃動（覆蓋 reduce 規則）*/
-#page-result .sway {
-  animation: swayFew 1.1s ease-in-out forwards !important;
-}
-</style>
+
+  /* 手機微調 */
+  @media (max-width:480px) {
+    #setupForm > fieldset > legend,
+    #setupForm > fieldset > legend .legend-text {
+      font-size: 20px;
+    }
+    #setupForm > label > span[data-i] {
+      font-size: 18px;
+      margin: 6px 0 8px;
+    }
+  }
+  /* ===== 祈禱頁：神聖漂浮＋光暈特效 ===== */
+  #page-pray .cup {
+    position: relative;
+    transform: scale(1.28);                 /* 放大 */
+    transition: transform .3s ease;
+    z-index: 0;                             /* 給 halo 疊層用 */
+  }
+
+  /* 圖像微擺頭（更有活著的感覺） */
+  #page-pray .cup img,
+  #page-pray .cup svg {
+    animation:
+      holyYaw 6s ease-in-out infinite,
+      holyBreath 5.5s ease-in-out infinite;
+    filter:
+      drop-shadow(0 10px 14px rgba(0,0,0,.45))
+      drop-shadow(0 0 10px rgba(255,212,82,.22));
+    will-change: transform, filter;
+  }
+
+  /* 金色光暈（脈動兩層） */
+  #page-pray .cup::after {
+    content: "";
+    position: absolute;
+    inset: -32%;
+    border-radius: 50%;
+    pointer-events: none;
+    background:
+      radial-gradient(circle,
+        rgba(255,223,120,.55) 0%,
+        rgba(255,223,120,.25) 35%,
+        rgba(255,223,120,.10) 58%,
+        rgba(255,223,120,0) 75%);
+    filter: blur(10px);
+    animation: haloPulse 3.2s ease-in-out infinite;
+    z-index: -1; /* 在桮後面 */
+  }
+
+  /* 手機略縮，避免超框 */
+  @media (max-width:480px){
+    #page-pray .cup { transform: scale(1.18); }
+  }
+
+  /* 動畫定義：微擺頭、輕呼吸、光暈脈動 */
+  @keyframes holyYaw {
+    0%   { transform: rotateZ(-2deg) }
+    50%  { transform: rotateZ( 2deg) }
+    100% { transform: rotateZ(-2deg) }
+  }
+  @keyframes holyBreath {
+    0%,100% { transform: scale(1) }
+    50%     { transform: scale(1.02) }
+  }
+  @keyframes haloPulse {
+    0%,100% { opacity:.55; transform: scale(1) }
+    40%     { opacity:.85; transform: scale(1.06) }
+    70%     { opacity:.35; transform: scale(1.12) }
+  }
+
+  /* 使用者偏好「減少動態」：只留柔和陰影 */
+  @media (prefers-reduced-motion: reduce){
+    #page-pray .cup img,
+    #page-pray .cup svg { animation: none !important; }
+    #page-pray .cup::after { animation: none !important; opacity: .5; }
+  }
+  </style>
 
 </head>
 <body>
