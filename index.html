@@ -928,8 +928,15 @@
     const onPray   = page === 'pray';
     const onResult = page === 'result';
 
-    // ▼▼ 只在第一頁顯示語言選單（<div class="lang">…</div>） ▼▼
+    // 只在 Step 1 & Step 2 顯示「背景音效」按鈕
+    document.getElementById('btnMute')
+      ?.toggleAttribute('hidden', !(onSetup1 || onSetup2));
+
+    // ✅ 只在 Step 1 顯示語言選單
     document.querySelector('.lang')?.toggleAttribute('hidden', !onSetup1);
+
+    // ✅ 只在 Step 1 與 Step 2 顯示背景音效選單
+    document.querySelector('.bgm')?.toggleAttribute('hidden', !(onSetup1 || onSetup2));
 
     $('#btnNext').hidden  = !(onSetup1 || onSetup2);  // [下一步]：只在 Step1 & Step2 顯示
     $('#btnBack').hidden  = onSetup1;  // [回設定]：除了 Step1 以外都顯示
