@@ -392,15 +392,6 @@
     transform: scale(0.97);
     background: radial-gradient(circle at 50% 35%, #dd3333 0%, #aa0000 70%, #550000 100%);
   }
-  /* === 結果頁淡入動畫 === */
-  #page-result {
-    opacity: 0;
-    transition: opacity 0.8s ease;   /* 淡入速度 */
-  }
-
-  #page-result.show {
-    opacity: 1;
-  }
   </style>
 
 </head>
@@ -1022,28 +1013,12 @@
     }
   });
 
-  // 新版：先微震 + 延遲 1 秒，再進結果頁與 toss()
   $('#btnToss').addEventListener('click', ()=>{
-    // 2) 微震感（支援就震 60ms）
-    try { if (navigator.vibrate) navigator.vibrate(60); } catch(_) {}
-
-    // 防連點：暫時禁用 1.4 秒
-    const btn = $('#btnToss');
-    btn.disabled = true;
-    setTimeout(()=>{ btn.disabled = false; }, 1400);
-
-    setTimeout(()=>{
-      goto('result');
-      const res = document.getElementById('page-result');
-      res.classList.remove('show');   // 先移除舊動畫
-      void res.offsetWidth;           // 重新觸發 transition
-      res.classList.add('show');      // 加入淡入效果
-
-      $('#previewL').innerHTML = '';
-      $('#previewR').innerHTML = '';
-      ensureResultHolders();
-      toss();
-    }, 1000);
+    goto('result');
+    $('#previewL').innerHTML='';
+    $('#previewR').innerHTML='';
+    ensureResultHolders();
+    toss();
   });
 
   $('#btnAgain').addEventListener('click', ()=>{
