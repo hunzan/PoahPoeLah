@@ -91,7 +91,7 @@
     background:linear-gradient(180deg,transparent,rgba(0,0,0,.25)),#0b0b0f;
     padding:12px 16px; display:flex; gap:12px; z-index:20;
   }
-  .btn{ background:#1a2140; border:1px solid #232a52; color:#fff; padding:12px 14px; border-radius:14px; font-size:16px; }
+  .btn{ background:#1a2140; border:1px solid #232a52; color:#fff; padding:12px 14px; border-radius:14px; font-size:18px; }
   .btn.primary{ background:linear-gradient(180deg,#2a3568,#1f2852); border-color:#3b4aa8; }
   .btn.ghost{ background:#0f1320; }
 
@@ -240,7 +240,7 @@
     .cards .label{ font-size:11.5px; margin-top:3px; }
 
     .toolbar{ padding:8px 10px; gap:6px; }
-    .btn{ padding:8px 10px; font-size:14px; border-radius:10px; }
+    .btn{ padding:10px 12px; font-size:16px; border-radius:12px; }
 
     /* Pray page brief */
     #page-pray h2{ margin:0 0 4px; font-size:16px; font-weight:600; opacity:.9; }
@@ -371,6 +371,27 @@
     justify-content: center;
     margin: 0 0 var(--res-dice-bottom) !important;
   }
+  #btnToss {
+    background: radial-gradient(circle at 50% 35%, #ff6666 0%, #cc0000 70%, #660000 100%);
+    border: 2px solid #ffaaaa;
+    color: #fffdf5;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,.4);
+    box-shadow:
+      0 0 12px rgba(255,80,80,0.6),
+      0 0 30px rgba(255,50,50,0.3);
+    transition: all .2s ease-in-out;
+  }
+  #btnToss:hover {
+    transform: scale(1.05);
+    box-shadow:
+      0 0 18px rgba(255,120,120,0.75),
+      0 0 40px rgba(255,60,60,0.45);
+  }
+  #btnToss:active {
+    transform: scale(0.97);
+    background: radial-gradient(circle at 50% 35%, #dd3333 0%, #aa0000 70%, #550000 100%);
+  }
   </style>
 
 </head>
@@ -462,7 +483,7 @@
     <button class="btn" id="btnNext" data-i="next">下一步</button>
     <button class="btn primary" id="btnToss" data-i="toss" hidden>跋桮 / poa̍h-poe</button>
     <button class="btn" id="btnAgain" data-i="again" hidden>再跋一擺</button>
-    <button class="btn ghost" id="btnMute">背景音效 🔈</button>
+    <button class="btn ghost" id="btnMute">背景音效🔈</button>
   </div>
 
   <template id="tpl-line"><div class="small"></div></template>
@@ -503,8 +524,8 @@
         whoHelp:"輸入神明稱號，或改選其他對象", yourName:"求問者姓名／暱稱", wish:"求問事項",
         cupLegend:"❤️ 按下選筊", cupHint:"小提醒：不同樣式只是外觀，機率一樣啦～",
         prayTitle:"先誠心祈禱，再擲筊", resTitle:"指示結果",
-        muteAllOn:  "🔇 全部靜音",
-        muteAllOff: "🔈 開啟聲音",
+        muteAllOn:  "🔇全部靜音",
+        muteAllOff: "🔈開啟聲音",
         back:"回設定", next:"下一步", toss:"擲筊", again:"再擲一次",
         ok:"聖杯：得到應允，去做就對了！",
         bad:"陰杯：神明說不行，換個方法吧。",
@@ -521,8 +542,8 @@
         whoHelp:"輸入神明稱號，或改選其他對象", yourName:"求問者姓名／暱稱", wish:"求問事項",
         cupLegend:"❤️ 揤遮選桮", cupHint:"提示：款式仝款，機率袂變～",
         prayTitle:"誠心祈求了後，揤落去跋桮", resTitle:"指示結果",
-        muteAllOn:  "🔇 全部靜音",
-        muteAllOff: "🔈 放送聲音",
+        muteAllOn:  "🔇全部靜音",
+        muteAllOff: "🔈放送聲音",
         back:"倒轉--去", next:"後一步", toss:"跋桮 / poa̍h-poe", again:"閣跋一擺",
         ok:"神桮（sîn-poe / siūⁿ-poe）：得著應允，你ê祈求會實現！",
         bad:"陰桮（im-poe / bô-poe）：毋通喔，換一款做法。",
@@ -545,8 +566,8 @@
         wish:"Question / intention",
         cupLegend:"❤️ Press to Choose Poe style",
         cupHint:"Note: all styles are cosmetic; odds are identical.",
-        muteAllOn:  "🔇 Mute all",
-        muteAllOff: "🔈 Sound on",
+        muteAllOn:  "🔇Mute all",
+        muteAllOff: "🔈Sound on",
         prayTitle:"Say a sincere prayer, then toss",
         resTitle:"Response",
         back:"Back",
@@ -596,8 +617,8 @@
 
   function updateMuteUI(){
     const t = I18N[S.lang] || {};
-    $('#btnMute').textContent = audioMuted ? (t.muteAllOn || '🔇 全部靜音')
-                                           : (t.muteAllOff || '🔈 開啟聲音');
+    $('#btnMute').textContent = audioMuted ? (t.muteAllOn || '🔇全部靜音')
+                                           : (t.muteAllOff || '🔈開啟聲音');
     $('#btnMute').setAttribute('aria-pressed', String(audioMuted));
   }
 
@@ -928,15 +949,12 @@
     const onPray   = page === 'pray';
     const onResult = page === 'result';
 
-    // 只在 Step 1 & Step 2 顯示「背景音效」按鈕
-    document.getElementById('btnMute')
-      ?.toggleAttribute('hidden', !(onSetup1 || onSetup2));
-
-    // ✅ 只在 Step 1 顯示語言選單
+    // 語言選單只在 Step 1 顯示
     document.querySelector('.lang')?.toggleAttribute('hidden', !onSetup1);
 
-    // ✅ 只在 Step 1 與 Step 2 顯示背景音效選單
-    document.querySelector('.bgm')?.toggleAttribute('hidden', !(onSetup1 || onSetup2));
+    // 背景音效按鈕只在 Step 1 & Step 2 顯示
+    document.getElementById('btnMute')
+      ?.toggleAttribute('hidden', !(onSetup1 || onSetup2));
 
     $('#btnNext').hidden  = !(onSetup1 || onSetup2);  // [下一步]：只在 Step1 & Step2 顯示
     $('#btnBack').hidden  = onSetup1;  // [回設定]：除了 Step1 以外都顯示
