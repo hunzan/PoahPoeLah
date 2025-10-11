@@ -2,231 +2,156 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>隱私權政策 | 跋桮啦！Poa̍h-poe--lah!</title>
-  <meta name="color-scheme" content="dark light">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>隱私權政策 | Poa̍h-poe--lah!</title>
+  <meta name="color-scheme" content="light" />
   <style>
     :root{
-      --bg:#0b0b0f; --fg:#f2f4f8; --muted:#b9bcc6; --acc:#ffd452;
-      --card:rgba(255,255,255,.06); --border:rgba(255,255,255,.15);
+      --banana:#fff8d6;         /* 香蕉淡黃 */
+      --ink:#1a1d2b;            /* 文字深藍灰 */
+      --muted:#4a5066;
+      --accent:#ffcf48;         /* 香蕉亮黃 */
+      --card:#ffffff;
+      --border:#ece5c8;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; color:var(--fg); background:var(--bg);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC","PingFang TC","Heiti TC",sans-serif;
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC","PingFang TC",sans-serif;
+      color:var(--ink); background:var(--banana);
     }
-    body::before{
-      content:""; position:fixed; inset:0;
-      background:url("assets/images/bg.webp") center/cover no-repeat fixed;
-      opacity:.18; z-index:-1;
-      filter:saturate(.95) brightness(.95);
-    }
-    main{max-width:900px; margin:0 auto; padding:24px 16px 72px}
     header{
-      position:sticky; top:0; z-index:5;
-      background:linear-gradient(180deg,#0b0b0f 70%,#0b0b0f00);
-      padding:16px 16px 8px; display:flex; gap:12px; align-items:center;
+      position:sticky; top:0; z-index:10;
+      background:linear-gradient(180deg, rgba(255,248,214,.98), rgba(255,248,214,.94));
+      border-bottom:1px solid var(--border);
     }
-    h1{font-size:24px; margin:0; letter-spacing:.5px}
-    .lang{margin-left:auto}
-    select{
-      padding:6px 10px; font-size:14px; border-radius:10px;
-      color:var(--fg); background:rgba(15,19,32,.55);
-      border:1px solid rgba(32,36,55,.6); backdrop-filter:blur(4px);
-    }
+    .wrap{max-width:920px; margin:0 auto; padding:18px 16px;}
+    h1{margin:0; font-size:24px; letter-spacing:.3px}
+    nav{margin-top:6px; font-size:14px}
+    nav a{color:#2a3a8a; text-decoration:none; border-bottom:1px dashed #2a3a8a}
+    main{padding:24px 16px}
+    .container{max-width:920px; margin:0 auto}
     .card{
-      background:var(--card); border:1px solid var(--border);
-      border-radius:16px; padding:18px; margin:14px 0;
-      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+      background:var(--card); border:1px solid var(--border); border-radius:14px;
+      padding:18px; box-shadow:0 6px 24px rgba(0,0,0,.06);
     }
-    h2{font-size:18px; margin:0 0 8px}
-    p,li{line-height:1.7; color:#e8ebf6}
-    ul{padding-left:20px; margin:6px 0 0}
-    a{color:var(--acc); text-decoration:none}
-    a:hover{text-decoration:underline}
-    .muted{color:var(--muted); font-size:14px}
-    footer{margin-top:28px; color:var(--muted); font-size:13px}
-    .badge{display:inline-block; padding:.25rem .5rem; border-radius:999px;
-      border:1px solid rgba(255,255,255,.22); background:rgba(0,0,0,.25)}
-    .hidden{display:none}
+    h2{font-size:18px; margin:14px 0 10px}
+    p,li{line-height:1.72}
+    .pill{
+      display:inline-block; background:var(--ink); color:#fff; padding:4px 10px;
+      border-radius:999px; font-size:12px; letter-spacing:.3px; margin-right:8px;
+    }
+    .lang-title{display:flex; align-items:center; gap:8px; margin:18px 0 8px}
+    .muted{color:var(--muted)}
+    footer{border-top:1px solid var(--border); margin-top:28px}
+    footer .wrap{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between}
+    .links a{color:#2a3a8a; text-decoration:none; border-bottom:1px dashed #2a3a8a}
+    @media (max-width:520px){
+      h1{font-size:20px}
+      .card{padding:14px}
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>隱私權政策｜Privacy Policy</h1>
-    <div class="lang">
-      <label class="muted" for="langSel">Language</label>
-      <select id="langSel" aria-label="Language">
-        <option value="zh" selected>繁體中文</option>
-        <option value="en">English</option>
-      </select>
+    <div class="wrap">
+      <h1>隱私權政策 <span class="muted">| Poa̍h-poe--lah!</span></h1>
+      <nav>
+        <a href="./index.html">回到遊戲</a> ·
+        <a href="./terms.html">使用條款</a>
+      </nav>
     </div>
   </header>
 
   <main>
-    <!-- ZH -->
-    <section id="sec-zh">
+    <div class="container">
       <div class="card">
-        <h2>關於本服務</h2>
-        <p><b>《跋桮啦！Poa̍h-poe--lah!》</b> 是一款可離線遊玩的輕鬆趣味小遊戲。此政策說明我們如何處理個人資料與裝置資訊。</p>
-        <p class="muted">版本：1.0｜更新日期：2025-10-07｜開發者：Akau & Kimchio Studio</p>
-      </div>
+        <div class="lang-title"><span class="pill">ZH-TW</span><strong>隱私權政策</strong></div>
+        <p>感謝你使用 <b>Poa̍h-poe--lah!</b>（以下稱「本遊戲」）。我們重視你的隱私。本文件說明我們如何在最小化資料蒐集的前提下，提供功能與體驗。</p>
 
-      <div class="card">
-        <h2>我們蒐集哪些資訊？</h2>
+        <h2>我們蒐集什麼資料？</h2>
         <ul>
-          <li><b>我們不要求註冊、沒有帳號，也不主動蒐集可識別個人身分的資訊。</b></li>
-          <li><b>本地儲存</b>：僅保存語言選擇、UI 摺疊狀態等設定於瀏覽器 LocalStorage，離線可用、離開裝置不會帶走。</li>
-          <li><b>記錄/診斷</b>：若透過 Google Play/Android 平台產生匿名的安裝量、崩潰與效能統計，僅用於改進穩定度。</li>
+          <li><b>必要資料：</b>本遊戲不要求建立帳號；輸入於裝置上的祈禱文字、暱稱等，僅用於當次顯示，不會上傳至伺服器。</li>
+          <li><b>裝置端儲存：</b>語言偏好、折疊面板狀態等會以瀏覽器 <code>localStorage</code> 方式保存在你的裝置中。</li>
+          <li><b>廣告（若啟用）：</b>若顯示行動廣告，廣告供應商（例如 Google AdMob）可能使用廣告 ID 或 Cookie 以提供、測量廣告。詳細請參閱供應商的隱私政策。</li>
         </ul>
-      </div>
 
-      <div class="card">
-        <h2>廣告（如啟用）</h2>
-        <p>我們可能在 Android 版本中導入第三方廣告（例如 Google AdMob），目的在支援繼續開發免費內容。若啟用，第三方可能處理：</p>
+        <h2>我們如何使用資料？</h2>
         <ul>
-          <li>裝置資訊與<b>廣告識別碼（AAID）</b>（用於頻次控制、除錯、歸因）</li>
-          <li>粗略地區（Country/Region）與匿名使用事件</li>
+          <li>提供遊戲核心功能（顯示結果、音效與介面語言）。</li>
+          <li>改善效能與穩定性（例如錯誤排查的匿名技術資訊）。</li>
+          <li>在啟用廣告時，用於顯示與投放基本的非個人化或個人化廣告（依你所在區域之選項而定）。</li>
         </ul>
-        <p>你可於 Android 系統設定中重設或限制廣告追蹤。更多資訊可參考
-          <a href="https://policies.google.com/technologies/ads">Google 廣告與隱私</a>。</p>
-      </div>
 
-      <div class="card">
-        <h2>我們如何使用資訊？</h2>
+        <h2>資料分享</h2>
+        <p>我們不會出售你的個人資料。當使用第三方服務（如廣告或分析工具）時，該服務商可能基於其政策處理資料。請參考其官方文件。</p>
+
+        <h2>兒少保護</h2>
+        <p>我們的內容為一般大眾取向。若你的地區法規對兒童資料有特別規範（如 COPPA/GDPR-K），我們會依平台與廣告供應商提供的設定，將廣告設為兒少友善模式（如啟用時）。</p>
+
+        <h2>你的選擇</h2>
         <ul>
-          <li>提供與維護服務（例如離線設定記憶、介面語言）</li>
-          <li>改進效能與穩定性（依賴平台提供的匿名統計）</li>
-          <li>（如啟用）顯示第三方廣告</li>
+          <li>你可以在系統或瀏覽器端清除網站資料（含 <code>localStorage</code>）。</li>
+          <li>你可以在廣告同意介面或裝置設定中，調整廣告偏好（如限縮追蹤）。</li>
         </ul>
-      </div>
 
-      <div class="card">
-        <h2>分享與第三方</h2>
-        <ul>
-          <li>我們不出售你的個人資料。</li>
-          <li>除（如啟用）廣告與平台診斷外，不與其他第三方分享資料。</li>
-        </ul>
-      </div>
+        <h2>資料安全</h2>
+        <p>本遊戲為前端型應用，主要資料保留於你的裝置。若使用第三方服務，我們會盡力選擇可信供應商，但無法保證絕對安全。</p>
 
-      <div class="card">
-        <h2>兒童隱私</h2>
-        <p>本產品面向一般大眾，<b>不針對 13 歲以下兒童</b>蒐集可識別個資。</p>
-      </div>
-
-      <div class="card">
-        <h2>資料留存與安全</h2>
-        <ul>
-          <li>本地設定儲存在你的裝置上；移除 App 或清除瀏覽器資料即會刪除。</li>
-          <li>我們採合理技術/流程保護資料，但網路傳輸無法保證絕對安全。</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <h2>政策更新</h2>
-        <p>我們可能因功能或法規調整而更新此政策。更新後會同步於此頁公布並標記日期。</p>
-      </div>
-
-      <div class="card">
         <h2>聯絡我們</h2>
-        <p>若對隱私有任何疑問或要求，請來信：<a href="mailto:akau.kimchio@gmail.com">akau.kimchio@gmail.com</a></p>
-      </div>
+        <p>若有隱私相關問題，請來信：<a href="mailto:akau.kimchio@gmail.com">akau.kimchio@gmail.com</a></p>
 
-      <footer>
-        <span class="badge">Poa̍h-poe--lah! © Akau &amp; Kimchio Studio</span>
-      </footer>
-    </section>
+        <p class="muted">最後更新：2025-10-07</p>
 
-    <!-- EN -->
-    <section id="sec-en" class="hidden">
-      <div class="card">
-        <h2>About This App</h2>
-        <p><b>Poa̍h-poe--lah! (Funny Decision Maker)</b> is a light-hearted casual game that works offline. This policy explains how we handle personal data and device information.</p>
-        <p class="muted">Version: 1.0 | Updated: 2025-10-07 | Developer: Akau & Kimchio Studio</p>
-      </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:18px 0" />
 
-      <div class="card">
-        <h2>What We Collect</h2>
+        <div class="lang-title"><span class="pill">EN</span><strong>Privacy Policy</strong></div>
+        <p>Thanks for using <b>Poa̍h-poe--lah!</b> (the “App”). We respect your privacy and strive to collect the minimum data necessary to deliver features and a fun experience.</p>
+
+        <h2>What we collect</h2>
         <ul>
-          <li><b>No sign-ups, no accounts, and we do not actively collect personally identifiable information.</b></li>
-          <li><b>Local Storage</b>: language preference and UI fold state are saved on your device only, enabling offline play.</li>
-          <li><b>Logs/Diagnostics</b>: aggregated, anonymous install/crash/performance data from Google Play/Android may be used to improve stability.</li>
+          <li><b>Essential data:</b> No account is required. Text you type (e.g., prayer or nickname) stays on your device and is not uploaded to our servers.</li>
+          <li><b>On-device storage:</b> Preferences such as language or UI states may be stored via the browser’s <code>localStorage</code> on your device.</li>
+          <li><b>Advertising (if enabled):</b> If mobile ads are displayed, ad providers (e.g., Google AdMob) may use an ad ID or cookies to serve and measure ads. See the provider’s privacy policy for details.</li>
         </ul>
-      </div>
 
-      <div class="card">
-        <h2>Ads (If Enabled)</h2>
-        <p>We may enable third-party ads in the Android build (e.g., Google AdMob) to support free content development. If enabled, partners may process:</p>
+        <h2>How we use data</h2>
         <ul>
-          <li>Device info and the <b>Advertising ID (AAID)</b> (for frequency capping, debugging, attribution)</li>
-          <li>Approximate region (country/region) and anonymized usage events</li>
+          <li>To provide core features (show results, play sounds, and render the UI language).</li>
+          <li>To improve performance and stability (e.g., anonymous technical diagnostics).</li>
+          <li>To show basic non-personalized or personalized ads when enabled (subject to your region and choices).</li>
         </ul>
-        <p>You can reset or limit ad tracking in Android settings. Learn more at
-          <a href="https://policies.google.com/technologies/ads">Google Ads & Privacy</a>.</p>
-      </div>
 
-      <div class="card">
-        <h2>How We Use Data</h2>
+        <h2>Sharing</h2>
+        <p>We do not sell your personal data. When using third-party services (e.g., ads/analytics), those providers may process data under their own policies.</p>
+
+        <h2>Kids</h2>
+        <p>The App targets a general audience. Where local laws apply (e.g., COPPA / GDPR-K), we use platform/provider settings to enable child-appropriate ad modes when applicable.</p>
+
+        <h2>Your choices</h2>
         <ul>
-          <li>Provide and maintain the service (offline settings, UI language)</li>
-          <li>Improve performance and stability (via platform diagnostics)</li>
-          <li>(If enabled) display third-party advertising</li>
+          <li>You may clear site data in your browser/system (including <code>localStorage</code>).</li>
+          <li>You may adjust ad preferences in consent prompts or device settings (e.g., limit ad tracking).</li>
         </ul>
-      </div>
 
-      <div class="card">
-        <h2>Sharing & Third Parties</h2>
-        <ul>
-          <li>We do not sell your personal data.</li>
-          <li>Aside from (if enabled) ads and platform diagnostics, we do not share data with other third parties.</li>
-        </ul>
-      </div>
+        <h2>Security</h2>
+        <p>This is a client-side App; data mainly remains on your device. While we choose reputable providers, we cannot guarantee absolute security.</p>
 
-      <div class="card">
-        <h2>Children’s Privacy</h2>
-        <p>This app targets a general audience. <b>We do not knowingly collect personal data from children under 13.</b></p>
-      </div>
-
-      <div class="card">
-        <h2>Retention & Security</h2>
-        <ul>
-          <li>Local settings remain on your device; removing the app or clearing browser data deletes them.</li>
-          <li>We apply reasonable safeguards, but no method of transmission or storage is 100% secure.</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <h2>Updates to This Policy</h2>
-        <p>We may update this page to reflect feature or legal changes. The effective date will be shown above.</p>
-      </div>
-
-      <div class="card">
         <h2>Contact</h2>
-        <p>If you have privacy questions or requests, email us at:
-          <a href="mailto:akau.kimchio@gmail.com">akau.kimchio@gmail.com</a></p>
-      </div>
+        <p>Questions? Email us at <a href="mailto:akau.kimchio@gmail.com">akau.kimchio@gmail.com</a></p>
 
-      <footer>
-        <span class="badge">Poa̍h-poe--lah! © Akau &amp; Kimchio Studio</span>
-      </footer>
-    </section>
+        <p class="muted">Last Updated: 2025-10-07</p>
+      </div>
+    </div>
   </main>
 
-  <script>
-    // very small bilingual toggle
-    const sel = document.getElementById('langSel');
-    const secZH = document.getElementById('sec-zh');
-    const secEN = document.getElementById('sec-en');
-    function applyLang(v){
-      secZH.classList.toggle('hidden', v !== 'zh');
-      secEN.classList.toggle('hidden', v !== 'en');
-      localStorage.setItem('pp-privacy-lang', v);
-      document.documentElement.lang = (v === 'zh' ? 'zh-Hant' : 'en');
-      document.title = (v === 'zh' ? '隱私權政策 | 跋桮啦！Poa̍h-poe--lah!' : 'Privacy Policy | Poa̍h-poe--lah!');
-    }
-    sel.addEventListener('change', ()=>applyLang(sel.value));
-    applyLang(localStorage.getItem('pp-privacy-lang') || 'zh');
-  </script>
+  <footer>
+    <div class="wrap">
+      <div class="muted">© 2025 Poa̍h-poe--lah!</div>
+      <div class="links">
+        <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms</a> · <a href="https://hunzan.github.io/PoahPoeLah/">App</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
